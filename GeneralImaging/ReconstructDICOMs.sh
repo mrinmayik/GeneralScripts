@@ -7,9 +7,9 @@
 
 #module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
 
-set doc = "This script is meant to convert DICOMs to NIFTI using the dcm2niix_afni tool and save the output in a BIDs structure. \n\n To use this script type \ntcsh ReconstructDICOMs PARTICIPANT PROJECT_PATH RAW_DATA_PATH OUTPUT_PATH NUMBER_OF_ANATS NUMBER_OF_TASKS NAME_OF_TASK NUMBER_OF_RUNS_PER_TASK\n PARTICIPANT: Participant ID to make BIDs folder\n\n PROJECT_PATH: Path for project folder\n\n RAW_DATA_PATH: Path where the raw data is kept in project folder\n\n OUTPUT_PATH: Path where converted NIFTIs should be stored in subject folders\n\n NUMBER_OF_ANATS: How many anats were collected\n\n NUMBER_OF_TASKS: Number of tasks with functional runs. e.g. If you have Encoding and Test scans the answer is 2\n\n NAME_OF_TASK NUMBER_OF_RUNS_PER_TASK: What you have named your task in your raw folder, followed by number of runs for that task. e.g. If you have 3 encoding runs called *_enc_* and 2 test runs called *_test_* type enc 3 test 2\n"
+set doc = "This script is meant to convert DICOMs to NIFTI using the dcm2niix_afni tool and save the output in a BIDs structure. \n\n To use this script type \ntcsh ReconstructDICOMs PARTICIPANT PROJECT_PATH RAW_DATA_PATH OUTPUT_PATH NUMBER_OF_ANATS [NUMBER_OF_TASKS 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK]\n PARTICIPANT: Participant ID to make BIDs folder\n\n PROJECT_PATH: Path for project folder\n\n RAW_DATA_PATH: Path where the raw data is kept in project folder\n\n OUTPUT_PATH: Path where converted NIFTIs should be stored in subject folders\n\n NUMBER_OF_ANATS: How many anats were collected\n\n NUMBER_OF_TASKS: Number of tasks with functional runs. e.g. If you have Encoding and Test scans the answer is 2\n\n 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK: What you have named your task in your raw folder, followed by number of runs for that task. e.g. If you have 3 encoding runs called *_enc_* and 2 test runs called *_test_* type enc 3 test 2\n"
 
-if ( $#argv != 8 ) then
+if ( $#argv < 5 ) then
 	printf "******ERROR******\n The number of arguments do not match \n %b" "$doc"
 endif
 
@@ -18,7 +18,6 @@ set PROJECTPATH = $argv[2]
 set RAWDATAPATH = $argv[3]
 set OUTPUTPATH = $argv[4]
 set NUMBEROFANATS = $argv[5]
-set NUMBEROFTASKS = $argv[6]
 
 #Making sure all the paths exist
 if ( ! -d ${PROJECTPATH} ) then
@@ -51,6 +50,8 @@ if ( $#AnatPaths != ${NUMBEROFANATS} ) then
 	exit 1
 endif
 
+#####Deal with functionals, if any
+set NUMBEROFTASKS = $argv[6]
 #Count how many anat folders are in raw path
 set TaskInfo = ` expr $#argv - 6 `
 if ( ${TaskInfo} != `expr ${NUMBEROFTASKS} \* 2` ) then
@@ -58,7 +59,28 @@ if ( ${TaskInfo} != `expr ${NUMBEROFTASKS} \* 2` ) then
 	exit 1
 endif
 
-#set AnatPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "anat_*" `
+
+foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
+
+	cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
+	
+	set TaskNameIdx = `expr 6 + $FuncNum`
+	set TaskNumIdx = `expr 6 + $FuncNum + 1`
+	set FuncName = ${argv[${TaskNameIdx}]}
+	
+	set FuncPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "*${FuncName}_*" `
+	if ( $#FuncPaths != $argv[${TaskNumIdx}] ) then
+		echo "$#FuncPaths found for $FuncName. You indicated $argv[${TaskNumIdx}] funcs for this task. Something wrong!" #`expr 6 + $FuncNum`
+		exit 1
+	endif
+
+end
+
+
+echo "Done checking on stuff! Good luck having your shit together!"
+
+#################################### Do the actual conversion now! ####################################
+### On Anats
 foreach AnatNum ( `seq 1 $#AnatPaths` )
 
 	echo "\n**Working on $AnatPaths[${AnatNum}]**\n"
@@ -73,4 +95,31 @@ foreach AnatNum ( `seq 1 $#AnatPaths` )
 	
 end
 
-foreach 
+### On funcs, if any
+
+foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
+	cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
+
+	set TaskNameIdx = `expr 6 + $FuncNum`
+	set TaskNumIdx = `expr 6 + $FuncNum + 1`
+	set FuncName = ${argv[${TaskNameIdx}]}
+
+	set FuncPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "*${FuncName}_*" `
+	
+	foreach FuncNum ( `seq 1 $#FuncPaths`)
+		echo "\n**Working on $FuncPaths[${FuncNum}]**\n"
+		cd $FuncPaths[${FuncNum}]
+	
+		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii ) then
+			echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
+			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+		else
+			dcm2niix_afni -f ${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+		endif
+	end
+	
+end
+
+
+
+
