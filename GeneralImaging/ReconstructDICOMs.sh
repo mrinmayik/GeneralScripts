@@ -47,13 +47,14 @@ endif
 cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
 
 #####Deal with T1s, if any
-if( $T1DATA == 1 )
+if( $T1DATA == 1 ) then 
+	echo "\n\t\t\t************Working on T1s ************\n"
 	set NUMBEROFT1 = $argv[8]
 
 	#Count how many anat folders are in raw path
 	set T1Paths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "T1w_*" `
 	if ( $#T1Paths != ${NUMBEROFT1} ) then
-		echo "ERROR: Only $#T1Paths found. You indicated ${NUMBEROFT1} anats. Something wrong!"
+		echo "\nERROR: Only $#T1Paths found. You indicated ${NUMBEROFT1} T1(s). Something wrong!\n"
 		exit 1
 	endif
 	
@@ -74,13 +75,14 @@ endif
 
 
 #####Deal with T2s, if any
-if( $T2DATA == 1 )
+if( $T2DATA == 1 ) then
+	echo "\n\t\t\t************Working on T2s ************\n"
 	set NUMBEROFT2 = $argv[9]
 
 	#Count how many anat folders are in raw path
 	set T2Paths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "T2w_*" `
 	if ( $#T2Paths != ${NUMBEROFT2} ) then
-		echo "ERROR: Only $#T2Paths found. You indicated ${NUMBEROFT2} anats. Something wrong!"
+		echo "\nERROR: Only $#T2Paths found. You indicated ${NUMBEROFT2} T2(s). Something wrong!\n"
 		exit 1
 	endif
 	
@@ -100,76 +102,46 @@ if( $T2DATA == 1 )
 endif
 
 
-exit
+
 #####Deal with functionals, if any
-set NUMBEROFTASKS = $argv[6]
-#Count how many anat folders are in raw path
-set TaskInfo = ` expr $#argv - 6 `
-if ( ${TaskInfo} != `expr ${NUMBEROFTASKS} \* 2` ) then
-	echo "ERROR: You didn't enter the right number of task information. You said there are ${NUMBEROFTASKS} but you only provided ${TaskInfo} parameters with func information."
-	exit 1
-endif
-
-
-foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
-
-	cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
-	
-	set TaskNameIdx = `expr 6 + $FuncNum`
-	set TaskNumIdx = `expr 6 + $FuncNum + 1`
-	set FuncName = ${argv[${TaskNameIdx}]}
-	
-	set FuncPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "*${FuncName}_*" `
-	if ( $#FuncPaths != $argv[${TaskNumIdx}] ) then
-		echo "ERROR: $#FuncPaths found for $FuncName. You indicated $argv[${TaskNumIdx}] funcs for this task. Something wrong!" #`expr 6 + $FuncNum`
+if( $FUNCDATA == 1 ) then
+	echo "\n\t\t\t************Working on funcs ************\n"
+	set NUMBEROFTASKS = $argv[10]
+	#Count how many anat folders are in raw path
+	set TaskInfo = ` expr $#argv - 10 `
+	if ( ${TaskInfo} != `expr ${NUMBEROFTASKS} \* 2` ) then
+		echo "ERROR: You didn't enter the right number of task information. You said there are ${NUMBEROFTASKS} and provided ${TaskInfo} parameters with func information."
 		exit 1
 	endif
 
-end
+	foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
 
-
-echo "Done checking on stuff! Good luck having your shit together!"
-
-#################################### Do the actual conversion now! ####################################
-### On Anats
-foreach AnatNum ( `seq 1 $#AnatPaths` )
-
-	echo "\n**Working on $AnatPaths[${AnatNum}]**\n"
-	cd $AnatPaths[${AnatNum}]
+		cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
 	
-	if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${AnatNum}.nii ) then
-		echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${AnatNum}.nii already exists! Not overwriting!"
-		echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
-	else
-		dcm2niix_afni -f anat_${AnatNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
-	endif
+		set TaskNameIdx = `expr 10 + $FuncNum`
+		set TaskNumIdx = `expr 10 + $FuncNum + 1`
+		set FuncName = ${argv[${TaskNameIdx}]}
 	
-end
-
-### On funcs, if any
-
-foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
-	cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
-
-	set TaskNameIdx = `expr 6 + $FuncNum`
-	set TaskNumIdx = `expr 6 + $FuncNum + 1`
-	set FuncName = ${argv[${TaskNameIdx}]}
-
-	set FuncPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "*${FuncName}_*" `
-	
-	foreach FuncNum ( `seq 1 $#FuncPaths`)
-		echo "\n**Working on $FuncPaths[${FuncNum}]**\n"
-		cd $FuncPaths[${FuncNum}]
-	
-		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii ) then
-			echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
-			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
-		else
-			dcm2niix_afni -f ${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+		set FuncPaths = ` find ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ -type d -name "*${FuncName}_*" `
+		if ( $#FuncPaths != $argv[${TaskNumIdx}] ) then
+			echo "ERROR: $#FuncPaths found for $FuncName. You indicated $argv[${TaskNumIdx}] funcs for this task. Something wrong!" #`expr 6 + $FuncNum`
+			exit 1
 		endif
+
+		foreach FuncNum ( `seq 1 $#FuncPaths`)
+			echo "\n**Working on $FuncPaths[${FuncNum}]**\n"
+			cd $FuncPaths[${FuncNum}]
+	
+			if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii ) then
+				echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
+				echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+			else
+				dcm2niix_afni -f ${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+			endif
+		end
 	end
 	
-end
+endif
 
 
 
