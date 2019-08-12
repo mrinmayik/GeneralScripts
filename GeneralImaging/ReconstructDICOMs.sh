@@ -5,7 +5,7 @@
 # Written by Mrinmayi (mrinmayi@uwm.edu)
 ########################################################################################################################################################################
 
-#module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
+module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
 
 set doc = "This script is meant to convert DICOMs to NIFTI using the dcm2niix_afni tool and save the output in a BIDs structure. \n\n To use this script type \ntcsh ReconstructDICOMs PARTICIPANT PROJECT_PATH RAW_DATA_PATH OUTPUT_PATH T1DATA T2DATA FUNCDATA [NUMBER_OF_T1 NUMBER_OF_T2 NUMBER_OF_TASKS 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK]\n PARTICIPANT: Participant ID to make BIDs folder\n\n PROJECT_PATH: Path for project folder\n\n RAW_DATA_PATH: Path where the raw data is kept in project folder\n\n OUTPUT_PATH: Path where converted NIFTIs should be stored in subject folders\n\n NUMBER_OF_ANATS: How many anats were collected\n\n NUMBER_OF_TASKS: Number of tasks with functional runs. e.g. If you have Encoding and Test scans the answer is 2\n\n 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK: What you have named your task in your raw folder, followed by number of runs for that task. e.g. If you have 3 encoding runs called *_enc_* and 2 test runs called *_test_* type enc 3 test 2\n"
 
@@ -63,11 +63,16 @@ if( $T1DATA == 1 ) then
 		echo "\n**Working on $T1Paths[${T1Num}]**\n"
 		cd $T1Paths[${T1Num}]
 	
-		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${T1Num}.nii ) then
-			echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${T1Num}.nii already exists! Not overwriting!"
-			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/sub-${PARTICIPANT}_T1w_${T1Num}.nii ) then
+			echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/sub-${PARTICIPANT}_T1w_${T1Num}.nii already exists! Not overwriting!"
+			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ -type f -name *.nii -delete to delete all NIFTIs in one go."
 		else
-			dcm2niix_afni -f anat_${T1Num} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+			if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ ) then
+				echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ does not exist! Making it!"
+				mkdir ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/
+			endif
+			
+			dcm2niix_afni -f sub-${PARTICIPANT}_T1w_${T1Num} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ .
 		endif
 	
 	end
@@ -91,11 +96,16 @@ if( $T2DATA == 1 ) then
 		echo "\n**Working on $T2Paths[${T2Num}]**\n"
 		cd $T2Paths[${T2Num}]
 	
-		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${T2Num}.nii ) then
-			echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat_${T2Num}.nii already exists! Not overwriting!"
-			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+		if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/sub-${PARTICIPANT}_T2w_${T1Num}.nii ) then
+			echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/sub-${PARTICIPANT}_T2w_${T1Num}.nii already exists! Not overwriting!"
+			echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ -type f -name *.nii -delete to delete all NIFTIs in one go."
 		else
-			dcm2niix_afni -f anat_${T2Num} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+			if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ ) then
+				echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/ does not exist! Making it!"
+				mkdir ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat/
+			endif
+			
+			dcm2niix_afni -f sub-${PARTICIPANT}_T2w_${T1Num} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/anat .
 		endif
 	
 	end
@@ -132,11 +142,16 @@ if( $FUNCDATA == 1 ) then
 			echo "\n**Working on $FuncPaths[${FuncNum}]**\n"
 			cd $FuncPaths[${FuncNum}]
 	
-			if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii ) then
-				echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
-				echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+			if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNum}.nii ) then
+				echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
+				echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ -type f -name *.nii -delete to delete all NIFTIs in one go."
 			else
-				dcm2niix_afni -f ${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ .
+				if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ ) then
+					echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ does not exist! Making it!"
+					mkdir ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/
+				endif
+				
+				dcm2niix_afni -f sub-${PARTICIPANT}_${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func .
 			endif
 		end
 	end
