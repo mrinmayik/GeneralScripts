@@ -1,0 +1,41 @@
+#!/bin/tcsh
+
+#This script is got from the afni demos distributed at the Milwaukee AFNI Bootcamp.
+
+
+# This script should be sourced, to affect the current environment.
+# It is meant to initialize main variables needed by most other scripts.
+
+# study_root_in should basically be a BIDS data source directory
+# (subject directoris would be underneath)
+# set global_root  = /data/NIMH_SSCC/rickr/UCLA.pamenc.50
+set study_root_in  = /raid-02/LS/hannula/mrinmayi/GistMemory
+if ( ! -d $study_root_in ) then
+   echo '** missing $study_root_in : ' $study_root_in 
+   echo ""
+   echo "   please edit $0"
+   echo ""
+   exit 1
+endif
+
+# study_root_out could be the same as study_root_in; it is where
+# a derivatives directory should be
+# (do we keep it here for now?)
+set study_root_out = /raid-02/LS/hannula/mrinmayi/GistMemory
+set deriv_dir = $study_root_out/derivatives
+if ( ! -d $deriv_dir ) then
+   echo '++ making $deriv_dir' $deriv_dir
+   mkdir -p $deriv_dir
+   if ( $status ) then
+      echo "** failed to create deriv_dir: $deriv_dir, failing..."
+      exit 1
+   endif
+endif
+
+# set subject_list
+cd $study_root_in
+set all_subjects = ( sub-* )
+set nsubj = $#all_subjects
+cd -
+
+
