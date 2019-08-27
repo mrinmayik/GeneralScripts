@@ -127,7 +127,12 @@ if( $FUNCDATA == 1 ) then
 		echo "ERROR: You didn't enter the right number of task information. You said there are ${NUMBEROFTASKS} and provided ${TaskInfo} parameters with func information."
 		exit 1
 	endif
-
+	
+	if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ ) then
+		echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ does not exist! Making it!"
+		mkdir ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/
+	endif
+	
 	foreach FuncNum ( `seq 1 ${NUMBEROFTASKS}` )
 
 		cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
@@ -144,20 +149,15 @@ if( $FUNCDATA == 1 ) then
 		endif
 
 		#Reconstruct if NIFTIs don't already exist
-		foreach FuncNum ( `seq 1 $#FuncPaths`)
-			echo "\n**Working on $FuncPaths[${FuncNum}]**\n"
-			cd $FuncPaths[${FuncNum}]
+		foreach FuncNumber ( `seq 1 $#FuncPaths`)
+			echo "\n**Working on $FuncPaths[${FuncNumber}]**\n"
+			cd $FuncPaths[${FuncNumber}]
 	
-			if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNum}.nii ) then
-				echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNum}.nii already exists! Not overwriting!"
+			if ( -f  ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNumber}.nii ) then
+				echo "Warning: ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/sub-${PARTICIPANT}_${FuncName}_${FuncNumber}.nii already exists! Not overwriting!"
 				echo "Use find ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ -type f -name *.nii -delete to delete all NIFTIs in one go."
 			else
-				if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ ) then
-					echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func/ does not exist! Making it!"
-					mkdir ${PROJECTPATH}/${OUTPUTPATH	}/${PARTICIPANT}/func/
-				endif
-				
-				dcm2niix_afni -f sub-${PARTICIPANT}_${FuncName}_${FuncNum} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func .
+				dcm2niix_afni -f sub-${PARTICIPANT}_${FuncName}_${FuncNumber} -o ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/func .
 			endif
 		end
 	end
