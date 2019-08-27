@@ -1,15 +1,84 @@
 #!/bin/tcsh
 
 #This script is got from the afni demos distributed at the Milwaukee AFNI Bootcamp.
+#It has been modified by Mrinmayi Kulkarni (mrinmayi@uwm.edu) to make it usable across projects
+#Any lines that have been modified have a #modified comment so that my stupidity is not mistaken for
+#the original script
+
+#The following modifications have been made in this script:
+#   1. An argument that takes in the name of the study_root_in and study_root_out from the command line. 
+#		This argument is now required. p.* scripts have been modified accordingly to pass this argument
+
 
 
 # This script should be sourced, to affect the current environment.
 # It is meant to initialize main variables needed by most other scripts.
 
+# modified
+set study_in = 0
+set study_out = 0
+
+# --------------------------------------------------
+# variables specifiec to this script
+
+# the name of this script
+set prog = `basename $0`
+
+
+set ac = 1
+while ( $ac <= $#argv )
+   if ( "$argv[$ac]" == "-help" ) then
+      echo "$prog       - run initialise basic variables"
+      echo ""
+      echo "usage: $prog study_root_in study_root_out"
+      echo ""
+      echo "options specific to this script"
+      echo ""
+	  echo "  -study_root_in PATH   : a BIDS data source directory" 
+      echo "  -study_root_out PATH  : directory where results are saved" 
+      echo ""
+      echo "general options"
+      echo ""
+      echo "  -help             : show help and exit"
+      echo ""
+      exit 0
+   # modified
+   else if ( "$argv[$ac]" == "-study_root_in" ) then
+     @ ac ++
+     if ( $ac > $#argv ) then
+        echo "** -study_root_in: missing argument"
+        exit 1
+     endif
+     set study_in = $argv[$ac]
+   else if ( "$argv[$ac]" == "-study_root_out" ) then
+     @ ac ++
+     if ( $ac > $#argv ) then
+        echo "** -study_root_out: missing argument"
+        exit 1
+     endif
+     set study_out = $argv[$ac]
+   endif
+
+   @ ac ++
+end
+
+# check that necessary arguments have been passed
+set neededargs = ( $study_in $study_out )
+set neededvars = ( study_in study_out )
+foreach ac ( `seq 1 $#neededargs` )
+   if ( $neededargs[$ac] == 0 ) then
+	   echo "-${neededvars[$ac]} is missing"
+	   exit 1
+   endif
+end
+
+# modified
+
+
 # study_root_in should basically be a BIDS data source directory
 # (subject directoris would be underneath)
 # set global_root  = /data/NIMH_SSCC/rickr/UCLA.pamenc.50
-set study_root_in  = /raid-02/LS/hannula/mrinmayi/GistMemory
+set study_root_in  = $study_in
 if ( ! -d $study_root_in ) then
    echo '** missing $study_root_in : ' $study_root_in 
    echo ""
@@ -21,7 +90,7 @@ endif
 # study_root_out could be the same as study_root_in; it is where
 # a derivatives directory should be
 # (do we keep it here for now?)
-set study_root_out = /raid-02/LS/hannula/mrinmayi/GistMemory
+set study_root_out = $study_out
 set deriv_dir = $study_root_out/derivatives
 if ( ! -d $deriv_dir ) then
    echo '++ making $deriv_dir' $deriv_dir
