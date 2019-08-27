@@ -1,0 +1,135 @@
+#!/bin/tcsh
+
+# ----------------------------------------------------------------------
+# modify per command
+
+set nneeded = 3
+set use_args = "SID INDATA_ROOT OUTDATA_ROOT"
+
+set sid = "$1"
+set indata_root = "$2"
+set outdata_root = "$3"
+
+# note: INDATA_ROOT  should be original tree, including EPI
+# note: OUTDATA_ROOT should be derivatives dir, we will assume children
+
+# inputs: 
+#    AFNI_01_SSwarper   - anats: orig, SS, warped; warps
+#    Freesurfer_01_afni - masks and FS datasets
+#    main data root     - EPI
+#    AFNI_02_MGT_NL     - cur dir - timing files
+#
+# ==> let $indata_root be 'derivatives', so we don't need to pass all
+
+
+# ----------------------------------------------------------------------
+# static test
+
+if ( $#argv < $nneeded ) then
+    set script = `basename $0`
+    echo $script : need $nneeded parameters
+    echo ""
+    echo "usage: $script $use_args"
+    echo ""
+    echo "command : $argv"
+    echo ""
+    exit 1
+endif
+
+
+# ----------------------------------------------------------------------
+# do the work
+
+set task = pamenc
+
+# derivatives children
+set SSdir = AFNI_01_SSwarper
+set APdir = AFNI_02_${task}
+
+
+# no ventrical PC regression
+
+set anat_orig     = $outdata_root/$SSdir/$sid/anatU.$sid.nii
+set anat_ss       = $outdata_root/$SSdir/$sid/anatSS.$sid.nii
+set anat_std      = $outdata_root/$SSdir/$sid/anatQQ.$sid.nii
+set anat_warp_aff = $outdata_root/$SSdir/$sid/anatQQ.$sid.aff12.1D
+set anat_warp_nl  = $outdata_root/$SSdir/$sid/anatQQ.${sid}_WARP.nii
+
+set EPI_files     = ($indata_root/$sid/func/${sid}_task-${task}_bold.nii.gz)
+
+set timing_files  = ( $outdata_root/$APdir/$sid/timing/times.{CONTROL,TASK}.txt )
+set stim_classes  = ( CONTROL TASK )
+
+foreach file ( $anat_orig $anat_ss $anat_std $anat_warp_aff $anat_warp_nl \
+               $EPI_files $timing_files)
+   if ( ! -f $file ) then
+      echo "** subject $sid, missing input $file"
+      exit 1
+   endif
+end
+
+# set -jobs based on known threads
+if ( $?SLURM_CPUS_PER_TASK ) then
+  setenv OMP_NUM_THREADS $SLURM_CPUS_PER_TASK
+  set njobs = $SLURM_CPUS_PER_TASK
+else
+  set njobs = 8
+endif
+
+echo "subject $sid, all files found"
+
+set ap_script = run.afni_proc.txt
+
+cat << EOF >! $ap_script
+
+# task-pamenc_bold.json shows slice timing of alt+z2 (missing from nii.gz)
+# blur in mask, and use higher 6 mm FWHM (voxels are 3x3x4)
+
+afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
+      -blocks tshift align tlrc volreg mask blur scale regress     \
+      -copy_anat $anat_ss                                          \
+      -anat_has_skull no                                           \
+      -anat_follower anat_w_skull anat $anat_orig                  \
+      -dsets $EPI_files                                            \
+      -tcat_remove_first_trs 0                                     \
+      -tshift_opts_ts -tpattern alt+z2                             \
+      -radial_correlate yes                                        \
+      -align_opts_aea -giant_move -cost lpc+ZZ -check_flip         \
+      -tlrc_base MNI152_2009_template_SSW.nii.gz                   \
+      -tlrc_NL_warp                                                \
+      -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl \
+      -volreg_align_to MIN_OUTLIER                                 \
+      -volreg_align_e2a                                            \
+      -volreg_tlrc_warp                                            \
+      -mask_epi_anat yes                                           \
+      -blur_size 6                                                 \
+      -blur_in_mask yes                                            \
+      -regress_stim_times $timing_files                            \
+      -regress_stim_labels $stim_classes                           \
+      -regress_stim_types AM1                                      \
+      -regress_basis_multi dmBLOCK                                 \
+      -regress_motion_per_run                                      \
+      -regress_censor_motion 0.3                                   \
+      -regress_censor_outliers 0.05                                \
+      -regress_compute_fitts                                       \
+      -regress_fout no                                             \
+      -regress_opts_3dD                                            \
+         -jobs $njobs                                              \
+      -regress_3dD_stop                                            \
+      -regress_reml_exec                                           \
+      -regress_make_ideal_sum sum_ideal.1D                         \
+      -regress_est_blur_errts                                      \
+      -regress_run_clustsim no                                     \
+      -html_review_style pythonic
+
+EOF
+
+# run afni_proc.py command, to save this text separately
+tcsh -x $ap_script |& tee out.$ap_script
+
+# and run resulting proc script
+tcsh -xef proc.$sid |& tee out.proc.$sid
+
+# on edge, so free up a little space, scale is already in all_runs
+\rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
+
