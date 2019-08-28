@@ -7,46 +7,146 @@
 
 module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
 
-set doc = "This script is meant to convert DICOMs to NIFTI using the dcm2niix_afni tool and save the output in a BIDs structure. \n\n To use this script type \ntcsh ReconstructDICOMs PARTICIPANT PROJECT_PATH RAW_DATA_PATH OUTPUT_PATH T1DATA T2DATA FUNCDATA [NUMBER_OF_T1 NUMBER_OF_T2 NUMBER_OF_TASKS 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK]\n PARTICIPANT: Participant ID to make BIDs folder\n\n PROJECT_PATH: Path for project folder\n\n RAW_DATA_PATH: Path where the raw data is kept in project folder\n\n OUTPUT_PATH: Path where converted NIFTIs should be stored in subject folders\n\n T1DATA: 1 if there are T1s that need to be reconstructed, 0 if no T1s\n\n T2DATA: 1 if there are T2s that need to be reconstructed, 0 if no T2s\n\n FUNCDATA:  1 if there are functionals that need to be reconstructed, 0 if no functionals\n\n [Optional parameters: NUMBER_OF_T1: How many T1s were collected (set to 0 if you have T2s/funcs but not T1s)\n\n NUMBER_OF_T2: How many T2s were collected (set to 0 if you have funcs but not T2s) \n\n NUMBER_OF_TASKS: Number of tasks with functional runs. e.g. If you have Encoding and Test scans the answer is 2\n\n 'NAME_OF_TASK' NUMBER_OF_RUNS_PER_TASK: What you have named your task in quotes in your raw folder, followed by number of runs for that task. e.g. If you have 3 encoding runs called *_enc_* and 2 test runs called *_test_* type 'enc' 3 'test' 2\n"
 
-#Check if all the required arguments are passed
-if ( $#argv < 7 ) then
-	printf "******ERROR******\n The number of arguments do not match \n %b" "$doc"
-	exit 
+#Initialise some stuff
+set project = 0
+set input_dir = sourcedata
+set output_dir = rawdata
+
+set T1Data = 0
+set T2Data = 0
+set fmap = 0
+set func = 0
+
+set redo = 0
+#The name of this script
+set prog = `basename $0`
+#List of subjects to reconstruct
+set subj_proc_list = ()
+
+
+# ======================================================================
+# process command-line arguments
+set ac = 1
+while ( $ac <= $#argv )
+   if ( "$argv[$ac]" == "-help" ) then
+      echo "$prog       - Convert dcms and puts them in BIDs compliant format"
+      echo ""
+      echo "usage: $prog [options...] subj subj ..."
+      echo ""
+      echo "options specific to this script"
+      echo ""
+	  echo "  -project PATH     : path to project folder that you're working on"
+      echo "  -input_dir DIR    : folder in project path where DICOM folders are stored"
+	  echo "						default: [project]/sourcedata"
+      echo "  -output_dir DIR   : folder in project path where you want the NIFTIs"
+	  echo "						default: [project]/rawdata"
+	  echo "  -T1Data NUM    	: how many T1s you have"
+	  echo "						Note: make sure your T1 folders are called *T1w*"
+	  echo "						Note: T1s will be named [participant_id]_[T1_folder_name].nii"
+	  echo "  -T2Data NUM  		: how many T2s you have"
+	  echo "						Note: make sure your T2 folders are called *T2w*"
+	  echo "						Note: T2s will be named [participant_id]_[T2_folder_name].nii"
+  	  echo "  -fmap NUM  		: how many fieldmaps you have"
+	  echo "						Note: make sure your fmap folders are called *fmap*"
+	  echo "						Note: T2s will be named [participant_id]_[fmap_folder_name].nii"
+	  echo "  -func NAME NUM    : name of the task you're converting followed by how many runs you have"
+      echo ""
+      echo "general options"
+      echo ""
+      echo "  -help             : show help and exit"
+      echo "  -redo             : (delete previous and) re-create results"
+      echo ""
+      exit 0
+   # modified
+   else if ( "$argv[$ac]" == "-project" ) then
+     @ ac ++
+     if ( $ac > $#argv ) then
+        echo "** -project: missing argument"
+        exit 1
+     endif
+     set project = $argv[$ac]
+   else if ( "$argv[$ac]" == "-input_dir" ) then
+     @ ac ++
+     if ( $ac > $#argv ) then
+        echo "** -input_dir: missing argument"
+        exit 1
+     endif
+     set input_dir = $argv[$ac]
+   else if ( "$argv[$ac]" == "-output_dir" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -output_dir: missing argument"
+         exit 1
+      endif
+      set output_dir = $argv[$ac]
+   else if ( "$argv[$ac]" == "-T1Data" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -T1Data: missing argument"
+         exit 1
+      endif
+	  set T1Data = 1
+      set T1Num = $argv[$ac]
+   else if ( "$argv[$ac]" == "-T2Data" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -T2Data: missing argument"
+         exit 1
+      endif
+	  set T2Data = 1
+      set T2Num = $argv[$ac]
+   else if ( "$argv[$ac]" == "-fmap" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -fmap: missing argument"
+         exit 1
+	  endif
+	  set fmap = 1
+      set fmapNum = $argv[$ac]
+   else if ( "$argv[$ac]" == "-func" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -func: missing argument"
+         exit 1
+      endif
+      set func = 1
+      set funcName = $argv[$ac]
+	  
+      if ( $ac > $#argv ) then
+         echo "** -func: missing argument"
+         exit 1
+      endif
+      set funcName = $argv[$ac]
+   else if ( "$argv[$ac]" == "-redo" ) then
+      set redo = 1
+   else
+      # everything else should be a subject
+      set subj_proc_list = ( $argv[$ac-] )
+      break
+   endif
+   @ ac ++
+end
+
+#Check that participant list is provided
+if ( $?subj_proc_list ) then
+	echo "** no subject list provided"
+	echo "** if you want to do all subjects enter all"
 endif
-
-set PARTICIPANT = $argv[1]
-set PROJECTPATH = $argv[2]
-set RAWDATAPATH = $argv[3]
-set OUTPUTPATH = $argv[4]
-
-set T1DATA = $argv[5]
-set T2DATA = $argv[6]
-set FUNCDATA = $argv[7]
 
 #Making sure all the paths exist
-if ( ! -d ${PROJECTPATH} ) then
-	echo "ERROR: ${PROJECTPATH} does not exist!"
+if ( ! -d $project/$input_dir ) then
+	echo "ERROR: $project/$input_dir does not exist!"
 	exit 1
 endif
-if ( ! -d ${PROJECTPATH}/${RAWDATAPATH} ) then
-	echo "ERROR: ${PROJECTPATH}/${RAWDATAPATH} does not exist!"
+if ( ! -d $project/$output_dir ) then
+	echo "ERROR: $project/$output_dir does not exist! Making it!"
+	mkdir -p $project/$output_dir
 	exit 1
-endif
-if ( ! -d ${PROJECTPATH}/${RAWDATAPATH} ) then
-	echo "ERROR: ${PROJECTPATH}/${RAWDATAPATH} does not exist!"
-	exit 1
-endif
-if ( ! -d ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ ) then
-	echo "ERROR: ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/ does not exist!"
-	exit 1
-endif
-if ( ! -d ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ ) then
-	echo "${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/ does not exist! Making it!"
-	mkdir ${PROJECTPATH}/${OUTPUTPATH}/${PARTICIPANT}/
 endif
 
-cd ${PROJECTPATH}/${RAWDATAPATH}/${PARTICIPANT}/
+foreach subj in subj_proc_list
+	cd $project/$output_dir
 
 #####Deal with T1s, if any
 if( $T1DATA == 1 ) then
