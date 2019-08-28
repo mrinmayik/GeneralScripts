@@ -128,25 +128,82 @@ while ( $ac <= $#argv )
    @ ac ++
 end
 
-#Check that participant list is provided
-if ( $?subj_proc_list ) then
-	echo "** no subject list provided"
-	echo "** if you want to do all subjects enter all"
-endif
-
 #Making sure all the paths exist
 if ( ! -d $project/$input_dir ) then
 	echo "ERROR: $project/$input_dir does not exist!"
 	exit 1
 endif
+set study_root_in = $project/$input_dir
 if ( ! -d $project/$output_dir ) then
 	echo "ERROR: $project/$output_dir does not exist! Making it!"
 	mkdir -p $project/$output_dir
 	exit 1
 endif
+set study_root_out = $project/$output_dir
 
+#Check that participant list is provided
+if ( $subj_proc_list == all )
+	cd $study_root_in
+	set $subj_proc_list = ( sub-* )
+else if ( $#subj_proc_list == 0 ) then
+	echo "** no subject list provided"
+	echo "** if you want to do all subjects enter all"
+	echo "      and make sure folders are named sub-* in $study_root_in"
+endif
+
+
+#Setup some arrays so that you can loop over T1, T2, fmap reconstruction
+set moddo = ( $T1Data $T2Data $fmap )
+set modnames = ( T1w T2w fmap)
+set modnums = ( $T1Num $T2Num $fmapNum )
+set modoutpaths = ( anat anat fmap )
+
+
+###Actually start dealing with subjects
 foreach subj in subj_proc_list
-	cd $project/$output_dir
+	cd $study_root_in/$subj
+	foreach modc ( `seq 1 $#mods` )
+		#Did the user turn on this modality?
+		if ( $moddo[$modc] == 1 ) then
+			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			#Do they match up with how many are expected based on user-input?
+			if ( $#modpath != $modnums[$modc] ) then
+				echo "\nERROR: Only $#modpath found. You indicated $modnums[$modc] $modnames[$modc]. Something wrong!\n"
+				exit 1
+			endif
+			#Go through each folder
+			foreach rundir ( $modpaths )
+				#Get the name of the folder. This will be used to name in the NIFTI
+				set rundirname = `basename $rundir`
+				echo "NIFTI will be called $subj-$modnames[$modc]_$rundirname.nii"
+				
+				cd $study_root_in/$subj/$rundir
+				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
+				#if you give the whole path in find, it'll return the whole path
+				set dcmpath = `find $study_root_in/$subj/$rundir -type f -name "*.dcm" | head -n 1`
+				#get just the name oft he folder
+				set dcmdir = `dirname $rundir`
+				cd $dcmdir
+
+				#Reconstruct if NIFTIs don't already exist
+				if ( -f  $study_root_out/$subj/$modoutpaths[$modc]/$subj-$modnames[$modc]_$rundirname.nii ) then
+					echo "Warning: $study_root_out/$subj/$modoutpaths[$modc]/$subj-$modnames[$modc]_$rundirname.nii already exists! Not overwriting!"
+					echo "Use find $study_root_out/$subj/$modoutpaths[$modc]/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+				else
+					if ( ! -d $study_root_out/$subj/$modoutpaths[$modc] ) then
+						echo "$study_root_out/$subj/$modoutpaths[$modc] does not exist! Making it!"
+						mkdir -p $study_root_out/$subj/$modoutpaths[$modc]
+					endif #check if output folder exists
+					
+					dcm2niix_afni -f $subj-$modnames[$modc]_$rundirname -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
+				endif #check if NIFTIs already exist
+			end #go through runs of modality
+		endif #check whether the user turned conversion of this modality on
+	end #go through all modalities
+end #go through all subjects
+	
+	
+	
 
 #####Deal with T1s, if any
 if( $T1DATA == 1 ) then
