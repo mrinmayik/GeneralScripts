@@ -6,7 +6,7 @@
 #the original script
 
 #The following modifications have been made in this script:
-#   1. An argument that takes in the name of the study_root_in and study_root_out from the command line. 
+#   1. An argument that takes in the path of the  project from the command line. 
 #		This argument is now required. p.* scripts have been modified accordingly to pass this argument
 
 
@@ -15,8 +15,7 @@
 # It is meant to initialize main variables needed by most other scripts.
 
 # modified
-set study_in = 0
-set study_out = 0
+set project = 0
 
 # --------------------------------------------------
 # variables specifiec to this script
@@ -34,8 +33,9 @@ while ( $ac <= $#argv )
       echo ""
       echo "options specific to this script"
       echo ""
-	  echo "  -study_root_in PATH   : a BIDS data source directory" 
-      echo "  -study_root_out PATH  : directory where results are saved" 
+	  echo "  -project PATH   : a BIDS data source directory"
+	  echo "						Note: the output path will"
+	  echo "						also be set to this folder" 
       echo ""
       echo "general options"
       echo ""
@@ -46,25 +46,18 @@ while ( $ac <= $#argv )
    else if ( "$argv[$ac]" == "-study_root_in" ) then
      @ ac ++
      if ( $ac > $#argv ) then
-        echo "** -study_root_in: missing argument"
+        echo "** -project: missing argument"
         exit 1
      endif
-     set study_in = $argv[$ac]
-   else if ( "$argv[$ac]" == "-study_root_out" ) then
-     @ ac ++
-     if ( $ac > $#argv ) then
-        echo "** -study_root_out: missing argument"
-        exit 1
-     endif
-     set study_out = $argv[$ac]
+     set project = $argv[$ac]
    endif
 
    @ ac ++
 end
 
 # check that necessary arguments have been passed
-set neededargs = ( $study_in $study_out )
-set neededvars = ( study_in study_out )
+set neededargs = ( $project )
+set neededvars = ( project )
 foreach ac ( `seq 1 $#neededargs` )
    if ( $neededargs[$ac] == 0 ) then
 	   echo "-${neededvars[$ac]} is missing"
@@ -78,7 +71,7 @@ end
 # study_root_in should basically be a BIDS data source directory
 # (subject directoris would be underneath)
 # set global_root  = /data/NIMH_SSCC/rickr/UCLA.pamenc.50
-set study_root_in  = $study_in
+set study_root_in  = $project
 if ( ! -d $study_root_in ) then
    echo '** missing $study_root_in : ' $study_root_in 
    echo ""
@@ -90,7 +83,7 @@ endif
 # study_root_out could be the same as study_root_in; it is where
 # a derivatives directory should be
 # (do we keep it here for now?)
-set study_root_out = $study_out
+set study_root_out = $project
 set deriv_dir = $study_root_out/derivatives
 if ( ! -d $deriv_dir ) then
    echo '++ making $deriv_dir' $deriv_dir
