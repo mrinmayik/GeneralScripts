@@ -226,20 +226,28 @@ foreach subj ( $subj_proc_list )
 				cd $dcmdir
 				
 				#Reconstruct if NIFTIs don't already exist
-				if ( -f  $outpath/${nii_name}.nii && $redo == 0 ) then
-					echo "Warning: $outpath/${nii_name}.nii already exists! Not overwriting!"
-					echo "Use find $outpath/ -type f -name *.nii -delete to delete all NIFTIs in one go."
-				else if ( -f  $outpath/${nii_name}.nii && $redo == 1 ) then
-					echo "Warning: $outpath/${nii_name}.nii already exists and redo set to 1! Deleting NIFTI!"
-					rm $outpath/${nii_name}.*
-				else
+				if ( -f  $outpath/${nii_name}.nii ) then
+					if ( $redo == 0 ) then 
+						echo "Warning: $outpath/${nii_name}.nii already exists! Not overwriting!"
+						echo "Use find $outpath/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+						set convert = 0 #should dcm2niix be run?
+						echo "made redo no"
+					else if ( $redo == 1 ) then
+						echo "Warning: $outpath/${nii_name}.nii already exists and redo set to 1! Deleting NIFTI!"
+						rm $outpath/${nii_name}.*
+						set convert = 1
+						echo "made redo yes"
+					endif
+				else if ( ! -f  $outpath/${nii_name}.nii ) then
 					if ( ! -d $outpath/ ) then
 						echo "$outpath/ does not exist! Making it!"
 						mkdir -p $outpath/
 					endif #check if output folder exists
-					
-					dcm2niix_afni -f ${nii_name} -o $outpath/ $dcmdir
+					set convert = 1
 				endif #check if NIFTIs already exist
+				if ( $convert == 1 ) then 
+					dcm2niix_afni -f ${nii_name} -o $outpath/ $dcmdir
+				endif #check if all the conditions are right to run dcm2niix
 				@ runnum ++ #increment run number
 			end #go through runs of modality
 		endif #check whether the user turned conversion of this modality on
