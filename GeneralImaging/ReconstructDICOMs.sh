@@ -17,6 +17,13 @@ set T1Data = 0
 set T2Data = 0
 set fmap = 0
 set func = 0
+set T1Num = 0
+set T2Num = 0
+set fmapNum = 0
+set funcName = 0
+set funcNum = 0
+
+set dcm_string = .dcm
 
 set redo = 0
 #The name of this script
@@ -51,6 +58,8 @@ while ( $ac <= $#argv )
 	  echo "						Note: make sure your fmap folders are called *fmap*"
 	  echo "						Note: T2s will be named [participant_id]_[fmap_folder_name].nii"
 	  echo "  -func NAME NUM    : name of the task you're converting followed by how many runs you have"
+      echo "  -dcm_string NAME  : string in DICOM directory that will be used for looking for dicoms"
+	  echo "						default: *dcm"
       echo ""
       echo "general options"
       echo ""
@@ -81,43 +90,52 @@ while ( $ac <= $#argv )
       endif
       set output_dir = $argv[$ac]
    else if ( "$argv[$ac]" == "-T1Data" ) then
-      @ ac ++
+      set T1Data = 1 #do T1
+	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -T1Data: missing argument"
          exit 1
       endif
-	  set T1Data = 1
       set T1Num = $argv[$ac]
    else if ( "$argv[$ac]" == "-T2Data" ) then
-      @ ac ++
+      set T2Data = 1 #do T2
+	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -T2Data: missing argument"
          exit 1
       endif
-	  set T2Data = 1
       set T2Num = $argv[$ac]
    else if ( "$argv[$ac]" == "-fmap" ) then
-      @ ac ++
+      set fmap = 1 #do fmap
+	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -fmap: missing argument"
          exit 1
 	  endif
-	  set fmap = 1
       set fmapNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-func" ) then
-      @ ac ++
+      set func = 1 #do func
+
+	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
          exit 1
-      endif
-      set func = 1
+      endif      
       set funcName = $argv[$ac]
 	  
+	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
          exit 1
       endif
-      set funcName = $argv[$ac]
+      set funcNum = $argv[$ac]
+   else if ( "$argv[$ac]" == "-dcm_string" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -dcm_string: missing argument"
+         exit 1
+      endif
+      set dcm_string = $argv[$ac]
    else if ( "$argv[$ac]" == "-redo" ) then
       set redo = 1
    else
@@ -127,30 +145,34 @@ while ( $ac <= $#argv )
    endif
    @ ac ++
 end
+echo $dcm_string
+echo "subj_proc_list: $subj_proc_list"
 
 #Making sure all the paths exist
 if ( ! -d $project/$input_dir ) then
-	echo "ERROR: $project/$input_dir does not exist!"
+	echo "**ERROR: $project/$input_dir does not exist!"
 	exit 1
 endif
 set study_root_in = $project/$input_dir
+echo "study_root_in: $study_root_in\n"
 if ( ! -d $project/$output_dir ) then
-	echo "ERROR: $project/$output_dir does not exist! Making it!"
+	echo "$project/$output_dir does not exist! Making it!"
 	mkdir -p $project/$output_dir
-	exit 1
 endif
 set study_root_out = $project/$output_dir
+echo "study_root_out: $study_root_out\n"
 
 #Check that participant list is provided
-if ( $subj_proc_list == all )
+if ( $subj_proc_list == all ) then
 	cd $study_root_in
 	set $subj_proc_list = ( sub-* )
 else if ( $#subj_proc_list == 0 ) then
-	echo "** no subject list provided"
+	echo "**ERROR: no subject list provided"
 	echo "** if you want to do all subjects enter all"
 	echo "      and make sure folders are named sub-* in $study_root_in"
+	exit 1
 endif
-
+echo "==Made it here=="
 
 #Setup some arrays so that you can loop over T1, T2, fmap reconstruction
 set moddo = ( $T1Data $T2Data $fmap )
@@ -160,29 +182,35 @@ set modoutpaths = ( anat anat fmap )
 
 
 ###Actually start dealing with subjects
-foreach subj in subj_proc_list
+foreach subj ( $subj_proc_list )
 	cd $study_root_in/$subj
-	foreach modc ( `seq 1 $#mods` )
+	foreach modc ( `seq 1 $#moddo` )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			echo "\t\tmodpaths: $modpaths\n"
 			#Do they match up with how many are expected based on user-input?
-			if ( $#modpath != $modnums[$modc] ) then
-				echo "\nERROR: Only $#modpath found. You indicated $modnums[$modc] $modnames[$modc]. Something wrong!\n"
+			if ( $#modpaths < $modnums[$modc] ) then
+				echo "\nERROR: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]. Something wrong!\n"
 				exit 1
 			endif
+			
+			set runnum = 1
 			#Go through each folder
 			foreach rundir ( $modpaths )
 				#Get the name of the folder. This will be used to name in the NIFTI
 				set rundirname = `basename $rundir`
-				echo "NIFTI will be called $subj-$modnames[$modc]_$rundirname.nii"
+				echo "\t\trundirname: $rundirname\n"
+				echo "NIFTI will be called ${subj}_run-${runnum}_$modnames[$modc].nii"
 				
-				cd $study_root_in/$subj/$rundir
+				cd $rundir
 				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
 				#if you give the whole path in find, it'll return the whole path
-				set dcmpath = `find $study_root_in/$subj/$rundir -type f -name "*.dcm" | head -n 1`
+				set dcmpath = `find $rundir -type f -name "*$dcm_string*" | head -n 1` #$study_root_in/$subj/$rundir
+				echo "\t\tdcmpath: $dcmpath\n"
 				#get just the name oft he folder
-				set dcmdir = `dirname $rundir`
+				set dcmdir = `dirname $dcmpath`
+				echo "\t\tdcmdir: $dcmdir\n"
 				cd $dcmdir
 
 				#Reconstruct if NIFTIs don't already exist
@@ -195,15 +223,16 @@ foreach subj in subj_proc_list
 						mkdir -p $study_root_out/$subj/$modoutpaths[$modc]
 					endif #check if output folder exists
 					
-					dcm2niix_afni -f $subj-$modnames[$modc]_$rundirname -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
+					dcm2niix_afni -f ${subj}_run-${runnum}_$modnames[$modc] -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
 				endif #check if NIFTIs already exist
+				@ runnum ++ #increment run number
 			end #go through runs of modality
 		endif #check whether the user turned conversion of this modality on
 	end #go through all modalities
 end #go through all subjects
 	
 	
-	
+exit
 
 #####Deal with T1s, if any
 if( $T1DATA == 1 ) then
