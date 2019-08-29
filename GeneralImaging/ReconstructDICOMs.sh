@@ -198,10 +198,14 @@ foreach subj ( $subj_proc_list )
 			set runnum = 1
 			#Go through each folder
 			foreach rundir ( $modpaths )
-				#Get the name of the folder. This will be used to name in the NIFTI
-				set rundirname = `basename $rundir`
-				echo "\t\trundirname: $rundirname\n"
-				echo "NIFTI will be called ${subj}_run-${runnum}_$modnames[$modc].nii"
+				#Set name of NIFTI based on whether we are working with funcs or not
+				if ( $modnames[$modc] == $funcName ) then
+					set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
+				else
+					set nii_name = ${subj}_run-${runnum}_$modnames[$modc]
+				endif
+					
+				echo "NIFTI will be called ${nii_name}.nii"
 				
 				cd $rundir
 				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
@@ -214,8 +218,8 @@ foreach subj ( $subj_proc_list )
 				cd $dcmdir
 
 				#Reconstruct if NIFTIs don't already exist
-				if ( -f  $study_root_out/$subj/$modoutpaths[$modc]/$subj-$modnames[$modc]_$rundirname.nii ) then
-					echo "Warning: $study_root_out/$subj/$modoutpaths[$modc]/$subj-$modnames[$modc]_$rundirname.nii already exists! Not overwriting!"
+				if ( -f  $dcmdir/$dcmdir.nii ) then
+					echo "Warning: $study_root_out/$subj/$modoutpaths[$modc]/${nii_name}.nii already exists! Not overwriting!"
 					echo "Use find $study_root_out/$subj/$modoutpaths[$modc]/ -type f -name *.nii -delete to delete all NIFTIs in one go."
 				else
 					if ( ! -d $study_root_out/$subj/$modoutpaths[$modc] ) then
@@ -223,7 +227,7 @@ foreach subj ( $subj_proc_list )
 						mkdir -p $study_root_out/$subj/$modoutpaths[$modc]
 					endif #check if output folder exists
 					
-					dcm2niix_afni -f ${subj}_run-${runnum}_$modnames[$modc] -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
+					dcm2niix_afni -f ${nii_name} -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
 				endif #check if NIFTIs already exist
 				@ runnum ++ #increment run number
 			end #go through runs of modality
