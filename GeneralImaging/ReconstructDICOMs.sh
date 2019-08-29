@@ -175,10 +175,10 @@ endif
 echo "==Made it here=="
 
 #Setup some arrays so that you can loop over T1, T2, fmap reconstruction
-set moddo = ( $T1Data $T2Data $fmap )
-set modnames = ( T1w T2w fmap)
-set modnums = ( $T1Num $T2Num $fmapNum )
-set modoutpaths = ( anat anat fmap )
+set moddo = ( $T1Data $T2Data $fmap $func )
+set modnames = ( T1w T2w fmap $funcName )
+set modnums = ( $T1Num $T2Num $fmapNum $funcNum )
+set modoutpaths = ( anat anat fmap func )
 
 
 ###Actually start dealing with subjects
