@@ -180,6 +180,13 @@ set modnames = ( T1w T2w fmap $funcName )
 set modnums = ( $T1Num $T2Num $fmapNum $funcNum )
 set modoutpaths = ( anat anat fmap func )
 
+#Delete old files if redo is on
+#This cannot be done in the final loop because it'll delete the folder
+#for every run it
+foreach subj ( $subj_proc_list )
+	
+
+
 
 ###Actually start dealing with subjects
 foreach subj ( $subj_proc_list )
@@ -188,6 +195,7 @@ foreach subj ( $subj_proc_list )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			set outpath = $study_root_out/$subj/$modoutpaths[$modc]/
 			echo "\t\tmodpaths: $modpaths\n"
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
@@ -216,18 +224,21 @@ foreach subj ( $subj_proc_list )
 				set dcmdir = `dirname $dcmpath`
 				echo "\t\tdcmdir: $dcmdir\n"
 				cd $dcmdir
-
+				
 				#Reconstruct if NIFTIs don't already exist
-				if ( -f  $dcmdir/$dcmdir.nii ) then
-					echo "Warning: $study_root_out/$subj/$modoutpaths[$modc]/${nii_name}.nii already exists! Not overwriting!"
-					echo "Use find $study_root_out/$subj/$modoutpaths[$modc]/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+				if ( -f  $outpath/${nii_name}.nii && $redo == 0 ) then
+					echo "Warning: $outpath/${nii_name}.nii already exists! Not overwriting!"
+					echo "Use find $outpath/ -type f -name *.nii -delete to delete all NIFTIs in one go."
+				else if ( -f  $outpath/${nii_name}.nii && $redo == 1 ) then
+					echo "Warning: $outpath/${nii_name}.nii already exists and redo set to 1! Deleting NIFTI!"
+					rm $outpath/${nii_name}.*
 				else
-					if ( ! -d $study_root_out/$subj/$modoutpaths[$modc] ) then
-						echo "$study_root_out/$subj/$modoutpaths[$modc] does not exist! Making it!"
-						mkdir -p $study_root_out/$subj/$modoutpaths[$modc]
+					if ( ! -d $outpath/ ) then
+						echo "$outpath/ does not exist! Making it!"
+						mkdir -p $outpath/
 					endif #check if output folder exists
 					
-					dcm2niix_afni -f ${nii_name} -o $study_root_out/$subj/$modoutpaths[$modc] $dcmdir
+					dcm2niix_afni -f ${nii_name} -o $outpath/ $dcmdir
 				endif #check if NIFTIs already exist
 				@ runnum ++ #increment run number
 			end #go through runs of modality
