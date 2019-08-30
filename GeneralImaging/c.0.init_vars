@@ -33,9 +33,9 @@ while ( $ac <= $#argv )
       echo ""
       echo "options specific to this script"
       echo ""
-	  echo "  -project PATH   : a BIDS data source directory"
-	  echo "						Note: the output path will"
-	  echo "						also be set to this folder" 
+	  echo "  -study_root_in PATH   : a BIDS data source directory"
+	  echo "								Note: the output path will"
+	  echo "								also be set to this folder" 
       echo ""
       echo "general options"
       echo ""
@@ -66,7 +66,7 @@ foreach ac ( `seq 1 $#neededargs` )
 end
 
 # modified
-
+echo "made it to c.0"
 
 # study_root_in should basically be a BIDS data source directory
 # (subject directoris would be underneath)
@@ -95,9 +95,9 @@ if ( ! -d $deriv_dir ) then
 endif
 
 # set subject_list
-cd $study_root_in
-set all_subjects = ( sub-* )
-set nsubj = $#all_subjects
-cd -
+#cd $study_root_in
+#set all_subjects = ( sub-* )
+#set nsubj = $#all_subjects
+#cd -
 
 
