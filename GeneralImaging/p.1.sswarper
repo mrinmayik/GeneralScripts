@@ -48,6 +48,9 @@ set prog = `basename $0`
 
 # list of subjects to process
 set subj_proc_list = ()
+set project = 0
+set anat_name = 0
+set input_dir = "rawdata"
 
 # processing directory that goes under derivatives
 set proc_dir = AFNI_01_SSwarper
@@ -63,8 +66,13 @@ while ( $ac <= $#argv )
       echo ""
       echo "options specific to this script"
       echo ""
-      echo "  -proc_dir DIR     : root directory under 'derivates' for results"
+	  echo "  -project PATH     : path to project folder that you're working on" # modified
+	  echo "						Note: the output path will also be set to this folder"
+      echo "  -input_dir DIR     : directory in [project] where raw data is stored"
+      echo "                      default: $input_dir"
+	  echo "  -proc_dir DIR     : root directory under 'derivates' for results"
       echo "                      default: $proc_dir"
+	  echo "  -anat_name NAME	: Name of file that will be passed to SSwarper" # modified
       echo ""
       echo "general options"
       echo ""
@@ -75,9 +83,24 @@ while ( $ac <= $#argv )
       echo "  -script_dir DIR   : specify directory of processing scripts"
       echo "                      default: $script_dir"
       echo "  -swarm            : will we swarm this process"
-	  echo "  -anat_name NAME	: Name of file that will be passed to SSwarper" # modified
+	  
       echo ""
       exit 0
+	  # modified
+   else if ( "$argv[$ac]" == "-project" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -project: missing argument"
+         exit 1
+      endif
+      set project = $argv[$ac]
+   else if ( "$argv[$ac]" == "-input_dir" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -input_dir: missing argument"
+         exit 1
+      endif
+      set input_dir = $argv[$ac]
    else if ( "$argv[$ac]" == "-proc_dir" ) then
       @ ac ++
       if ( $ac > $#argv ) then
@@ -123,9 +146,23 @@ while ( $ac <= $#argv )
    @ ac ++
 end
 
+# check that necessary arguments have been passed
+# project path is needed because this path needs to be passed to c.0.int_vars
+# taskname is required to set output directory name etc
+set neededargs = ( $project $anat_name )
+set neededvars = ( project anat_name )
+foreach ac ( `seq 1 $#neededargs` )
+   if ( ${neededargs[${ac}]} == 0 ) then
+	   echo "made it here4"
+	   echo "-${neededvars[${ac}]} is missing"
+	   exit 1
+   endif
+end
+
+
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
-source $script_dir/c.0.init_vars
+source $script_dir/c.0.init_vars -study_root_in $project
 
 # ======================================================================
 # do some work...
@@ -142,7 +179,7 @@ echo "-- $prog : processing the following subjects $subj_proc_list" # modified
 echo "" # modified
 
 # input directory will be for the de-obliqued results under derivatives
-set in_dir = $study_root_in
+set in_dir = $study_root_in/$input_dir
 
 # output directory will be derivates/$proc_dir
 set res_dir = $deriv_dir/$proc_dir
@@ -172,7 +209,7 @@ foreach sid ( $subj_proc_list )
       @ todo += 1
    endif
 end
-
+echo "$in_dir/$sid/anat/$anat_name"
 echo ""
 echo "-- $prog subjects: $missing missing, $done already done, $todo todo"
 echo "                   $nredo redo"
