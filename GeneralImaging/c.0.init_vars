@@ -131,6 +131,7 @@ else
 		exit 1
 	else if ( -d $study_root_in/$input_dir ) then
 		# set subject_list
+		set in_dir = $study_root_in/$input_dir
 		cd $study_root_in/$input_dir
 		set all_subjects = ( sub-* )
 		set nsubj = $#all_subjects
