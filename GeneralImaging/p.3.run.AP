@@ -53,6 +53,9 @@ set project = 0 # modified
 # default dummy scans 
 set dummy_scans = 5 # modified
 
+# set proc_dir
+set proc_dir = 0 # modified
+
 # are we swarming this?
 set swarm = 0
 
@@ -76,9 +79,10 @@ while ( $ac <= $#argv )
       echo ""
       echo "options specific to this script"
       echo ""
-	  echo "  -project NAME     : name of project name that you're working on" # modified
+	  echo "  -project PATH     : path to project folder that you're working on" # modified
+	  echo "						Note: the output path will also be set to this folder"
       echo "  -proc_dir DIR     : root directory under 'derivates' for results"
-	  echo "						e.g. 3.AP.[taskname]" # modified
+	  echo "						default: 3.AP.[taskname]" # modified
 	  echo "  -taskanme NAME    : name of the task" # modified
 	  echo "  -dummy_scans NUM  : number of dummy scans to be discarded" # modified
 	  echo "						default: $dummy_scans"
@@ -156,8 +160,10 @@ while ( $ac <= $#argv )
 end
 
 # check that necessary arguments have been passed
-neededargs = ( $project $taskname $proc_dir )
-neededvars = ( project taskname proc_dir )
+# project path is needed because this path needs to be passed to c.0.int_vars
+# taskname is required to set output directory name etc
+neededargs = ( $project $taskname )
+neededvars = ( project taskname )
 foreach ac ( `seq 1 $#neededargs )
    if ( $neededargs[$ac] == 0 ) then
 	   echo "-$neededvars[$ac] is missing"
@@ -173,8 +179,15 @@ set cmd_label = 3.AP.$taskname
 
 # processing directory that goes under derivatives
 # ** for this script, dirs must correspond with those in c.ss.$cmd_label
-#set proc_dir = AFNI_02_${taskname} #This is required to be entered by the user now
 set SSW_dir = AFNI_01_SSwarper
+# if proc_dir was not set from command line, set it based on taskname
+if ( $proc_dir == 0 ) then
+	set proc_dir = AFNI_02_${taskname}
+	
+	echo "no -proc_dir was passed"
+	echo "setting proc_dir to $proc_dir"
+endif
+
 
 
 # source the variable init file (to keep them mostly in one place)
@@ -201,6 +214,8 @@ set in_dir = $study_root_in
 # output directory will be for FreeSurfer
 set res_dir = $deriv_dir/$proc_dir
 echo "-- $prog : results will go under $res_dir"
+echo "-- $prog : processing the following subjects $subj_proc_list" # modified
+echo "" # modified
 
 # for each subject, mask sure they exist
 set missing = 0
