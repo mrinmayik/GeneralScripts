@@ -4,7 +4,7 @@
 # modify per command
 
 set nneeded = 7
-set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS"
+set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS SMOOTH BLUR_SIZE STC STC_PATTERN"
 
 set sid = "$1"
 set indata_root = "$2"
@@ -14,6 +14,10 @@ set tasknum = "$5" # modified
 set SSdir = "$6" # modified
 set APdir = "$7" # modified
 set dummy_scans = "$8" # modified
+set smooth = "$9"
+set blur_size = "$10"
+set stc = "$11"
+set stc_pattern = "$12"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -82,13 +86,13 @@ cat << EOF >! $ap_script
 # blur in mask, and use higher 6 mm FWHM (voxels are 3x3x4)
 
 afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
-      -blocks tshift align tlrc volreg mask blur scale regress     \
+      -blocks tshift align tlrc volreg mask blur scale		       \
       -copy_anat $anat_ss                                          \
       -anat_has_skull no                                           \
       -anat_follower anat_w_skull anat $anat_orig                  \
       -dsets $EPI_files                                            \
-      -tcat_remove_first_trs 0                                     \
-      -tshift_opts_ts -tpattern alt+z2                             \
+      -tcat_remove_first_trs $dummy_scans                          \
+      -tshift_opts_ts -tpattern $stc_pattern                       \
       -radial_correlate yes                                        \
       -align_opts_aea -giant_move -cost lpc+ZZ -check_flip         \
       -tlrc_base MNI152_2009_template_SSW.nii.gz                   \
@@ -98,25 +102,8 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -volreg_align_e2a                                            \
       -volreg_tlrc_warp                                            \
       -mask_epi_anat yes                                           \
-      -blur_size 6                                                 \
+      -blur_size $blur_size                                        \
       -blur_in_mask yes                                            \
-      -regress_stim_times $timing_files                            \
-      -regress_stim_labels $stim_classes                           \
-      -regress_stim_types AM1                                      \
-      -regress_basis_multi dmBLOCK                                 \
-      -regress_motion_per_run                                      \
-      -regress_censor_motion 0.3                                   \
-      -regress_censor_outliers 0.05                                \
-      -regress_compute_fitts                                       \
-      -regress_fout no                                             \
-      -regress_opts_3dD                                            \
-         -jobs $njobs                                              \
-      -regress_3dD_stop                                            \
-      -regress_reml_exec                                           \
-      -regress_make_ideal_sum sum_ideal.1D                         \
-      -regress_est_blur_errts                                      \
-      -regress_run_clustsim no                                     \
-      -html_review_style pythonic
 
 EOF
 
@@ -129,3 +116,21 @@ tcsh -xef proc.$sid |& tee out.proc.$sid
 # on edge, so free up a little space, scale is already in all_runs
 \rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
 
+exit       
+-regress_stim_times $timing_files                            \
+-regress_stim_labels $stim_classes                           \
+-regress_stim_types AM1                                      \
+-regress_basis_multi dmBLOCK                                 \
+-regress_motion_per_run                                      \
+-regress_censor_motion 0.3                                   \
+-regress_censor_outliers 0.05                                \
+-regress_compute_fitts                                       \
+-regress_fout no                                             \
+-regress_opts_3dD                                            \
+-jobs $njobs                                                 \
+-regress_3dD_stop                                            \
+-regress_reml_exec                                           \
+-regress_make_ideal_sum sum_ideal.1D                         \
+-regress_est_blur_errts                                      \
+-regress_run_clustsim no                                     \
+-html_review_style pythonic
