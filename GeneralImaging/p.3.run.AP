@@ -380,7 +380,7 @@ foreach sid ( $subjs_todo )
    # this is special: in_dir is orig data root, and also pass
    # the derivative root (for other inputs)
    set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.3.AP $res_dir $deriv_dir ) # modified
+                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum $SSW_dir $final_dir $dummy_scans $smooth $blur_size $stc $stc_pattern ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then
