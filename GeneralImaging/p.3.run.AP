@@ -7,7 +7,7 @@
 
 #The following modifications have been made in this script:
 #	1. This afni_proc command only does preprocessing, and NOT regression. This is just to make sure that 
-#		standard preprocessing can be applied uniformly to all projects
+#		standard preprocessing can be applied uniformly to all projects across projects
 #	2. An additional argument that takes in the name of the project is added here. This argument is now
 #       required. This is to ensure that c.0.initvars does not need to be editted for each project separately
 #	3. An additional argument that takes in the name of the task is added here. This argument is now
@@ -20,7 +20,7 @@
 
 # ===================== based on S.0.template.txt ======================
 
-# Run @SSwarper for a subject list passed on the command line.
+# Run afni_proc.py for a subject list passed on the command line.
 
 # Now, build a script of commands to run.
 
@@ -49,6 +49,9 @@ set taskname = 0 # modified
 
 # project we're working on 
 set project = 0 # modified
+
+# where are NIFTIs stored
+set input_dir = rawdata
 
 # default dummy scans 
 set dummy_scans = 5 # modified
@@ -80,10 +83,11 @@ while ( $ac <= $#argv )
       echo "options specific to this script"
       echo ""
 	  echo "  -project PATH     : path to project folder that you're working on" # modified
-	  echo "						Note: the output path will also be set to this folder"
+	  echo "  -taskanme NAME    : name of the task" # modified
+	  echo "  -input_dir PATH   : folder in [project] where NIFTIs are stored" # modified
+	  echo "							default: rawdata"
       echo "  -proc_dir DIR     : root directory under 'derivates' for results"
 	  echo "						default: 3.AP.[taskname]" # modified
-	  echo "  -taskanme NAME    : name of the task" # modified
 	  echo "  -dummy_scans NUM  : number of dummy scans to be discarded" # modified
 	  echo "						default: $dummy_scans"
       echo ""
@@ -114,6 +118,13 @@ while ( $ac <= $#argv )
         exit 1
      endif
      set taskanme = $argv[$ac]
+   else if ( "$argv[$ac]" == "-input_dir" ) then
+     @ ac ++
+     if ( $ac > $#argv ) then
+        echo "** -input_dir: missing argument"
+        exit 1
+     endif
+     set input_dir = $argv[$ac]
    else if ( "$argv[$ac]" == "-proc_dir" ) then
       @ ac ++
       if ( $ac > $#argv ) then
@@ -162,8 +173,8 @@ end
 # check that necessary arguments have been passed
 # project path is needed because this path needs to be passed to c.0.int_vars
 # taskname is required to set output directory name etc
-neededargs = ( $project $taskname )
-neededvars = ( project taskname )
+set neededargs = ( $project $taskname )
+set neededvars = ( project taskname )
 foreach ac ( `seq 1 $#neededargs )
    if ( $neededargs[$ac] == 0 ) then
 	   echo "-$neededvars[$ac] is missing"
