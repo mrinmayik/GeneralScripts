@@ -50,7 +50,7 @@ set prog = `basename $0`
 set subj_proc_list = ()
 set project = 0
 set anat_name = 0
-set input_dir = "rawdata"
+set input_dir = rawdata
 
 # processing directory that goes under derivatives
 set proc_dir = AFNI_01_SSwarper
@@ -162,7 +162,9 @@ end
 
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
-source $script_dir/c.0.init_vars -study_root_in $project
+source $script_dir/c.0.init_vars -study_root_in $project -input_dir $input_dir
+
+# modification ends
 
 # ======================================================================
 # do some work...
