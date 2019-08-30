@@ -54,8 +54,9 @@ set project = 0 # modified
 # where are NIFTIs stored
 set input_dir = rawdata
 
-# default dummy scans 
+# default AP inputs
 set dummy_scans = 5 # modified
+set blur_size = 6
 
 # set proc_dir
 set proc_dir = 0 # modified
@@ -99,7 +100,9 @@ while ( $ac <= $#argv )
       echo "                           Note: This scripts REQUIRES that SSwarper is run because it"
       echo "                              it will use transforms from this folder for alignment"
       echo "  -dummy_scans NUM    : number of dummy scans to be discarded" # modified
-      echo "                        default: $dummy_scans"
+      echo "                           default: $dummy_scans"
+      echo "  -smoothing FWHM     : kernel size to use for smoothing" # modified
+      echo "                           default: $blur_size"
       echo ""
       echo "general options"
       echo ""
