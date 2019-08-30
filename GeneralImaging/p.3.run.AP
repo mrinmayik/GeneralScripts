@@ -226,7 +226,7 @@ endif
 
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
-source $script_dir/c.0.init_vars -project $project -input_dir $inputdir
+source $script_dir/c.0.init_vars -project $project -input_dir $input_dir
 
 # modification ends
 
@@ -259,8 +259,13 @@ set nredo   = 0
 set missing_run = 0 # modified
 set subjs_todo = ()
 foreach sid ( $subj_proc_list )
+   # check if subject exists
+   if ( ! -d $in_dir/$sid ) then
+	   echo "** subject $sid  not present in $in_dir"
+	   exit 1
+   endif
    set func_dir = $in_dir/$sid/func
-
+   
    # if redo, delete old
    set final_dir = $res_dir/$sid/$sid.results
    if ( $redo &&  -d $final_dir ) then
