@@ -62,6 +62,9 @@ set proc_dir = 0 # modified
 # are we swarming this?
 set swarm = 0
 
+# output directory where SSwarper results are stored
+set SSW_dir = AFNI_01_SSwarper
+
 # --------------------------------------------------
 # variables specifiec to this script
 
@@ -76,20 +79,24 @@ set subj_proc_list = ()
 set ac = 1
 while ( $ac <= $#argv )
    if ( "$argv[$ac]" == "-help" ) then
-      echo "$prog       - run @SSwarper for the given subjects"
+      echo "$prog       - run preprocessing on specified task and subjects using afni_proc.py"
       echo ""
       echo "usage: $prog [options...] subj subj ..."
       echo ""
       echo "options specific to this script"
       echo ""
-	  echo "  -project PATH     : path to project folder that you're working on" # modified
-	  echo "  -taskanme NAME    : name of the task" # modified
-	  echo "  -input_dir PATH   : folder in [project] where NIFTIs are stored" # modified
-	  echo "							default: rawdata"
+      echo "  -project PATH     : path to project folder that you're working on" # modified
+      echo "  -taskname NAME    : name of the task" # modified
+      echo "  -input_dir PATH   : folder in [project] where NIFTIs are stored" # modified
+      echo "                        default: rawdata"
       echo "  -proc_dir DIR     : root directory under 'derivates' for results"
-	  echo "						default: 3.AP.[taskname]" # modified
-	  echo "  -dummy_scans NUM  : number of dummy scans to be discarded" # modified
-	  echo "						default: $dummy_scans"
+      echo "                        default: 3.AP.[taskname]" # modified
+      echo "  -SSW_dir DIR      : directory under 'derivates' where SSwarper results are stored"
+      echo "                        default: $SSW_dir" # modified
+      echo "                        Note: This scripts REQUIRES that SSwarper is run because it"
+      echo "                              it will use transforms from this folder for alignment"
+      echo "  -dummy_scans NUM  : number of dummy scans to be discarded" # modified
+      echo "                        default: $dummy_scans"
       echo ""
       echo "general options"
       echo ""
@@ -111,13 +118,13 @@ while ( $ac <= $#argv )
         exit 1
      endif
      set project = $argv[$ac]
-   else if ( "$argv[$ac]" == "-taskanme" ) then
+   else if ( "$argv[$ac]" == "-taskname" ) then
      @ ac ++
      if ( $ac > $#argv ) then
-        echo "** -taskanme: missing argument"
+        echo "** -taskname: missing argument"
         exit 1
      endif
-     set taskanme = $argv[$ac]
+     set taskname = $argv[$ac]
    else if ( "$argv[$ac]" == "-input_dir" ) then
      @ ac ++
      if ( $ac > $#argv ) then
@@ -132,6 +139,14 @@ while ( $ac <= $#argv )
          exit 1
       endif
       set proc_dir = $argv[$ac]
+
+   else if ( "$argv[$ac]" == "-SSW_dir" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -SSW_dir: missing argument"
+         exit 1
+      endif
+      set SSW_dir = $argv[$ac]
    else if ( "$argv[$ac]" == "-dummy_scans" ) then
       @ ac ++
       if ( $ac > $#argv ) then
@@ -175,7 +190,7 @@ end
 # taskname is required to set output directory name etc
 set neededargs = ( $project $taskname )
 set neededvars = ( project taskname )
-foreach ac ( `seq 1 $#neededargs )
+foreach ac ( `seq 1 $#neededargs` )
    if ( $neededargs[$ac] == 0 ) then
 	   echo "-$neededvars[$ac] is missing"
 	   exit 1
@@ -190,20 +205,19 @@ set cmd_label = 3.AP.$taskname
 
 # processing directory that goes under derivatives
 # ** for this script, dirs must correspond with those in c.ss.$cmd_label
-set SSW_dir = AFNI_01_SSwarper
 # if proc_dir was not set from command line, set it based on taskname
 if ( $proc_dir == 0 ) then
 	set proc_dir = AFNI_02_${taskname}
 	
-	echo "no -proc_dir was passed"
-	echo "setting proc_dir to $proc_dir"
+	echo "** no -proc_dir was passed"
+	echo "** setting proc_dir to $proc_dir"
 endif
 
 
 
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
-source $script_dir/c.0.init_vars $project
+source $script_dir/c.0.init_vars -study_root_in $project
 
 # modification ends
 
