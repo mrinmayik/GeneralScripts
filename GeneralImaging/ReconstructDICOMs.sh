@@ -198,8 +198,8 @@ foreach subj ( $subj_proc_list )
 			set runnum = 1
 			#Go through each folder
 			foreach rundir ( $modpaths )
-			
-				echo "************************* Now on $modnames[$modc]: run ${runnum} *************************"
+				
+				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
 				
 				#Set name of NIFTI based on whether we are working with funcs or not
 				if ( $modnames[$modc] == $funcName ) then
