@@ -162,7 +162,7 @@ end
 
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
-source $script_dir/c.0.init_vars -study_root_in $project -input_dir $input_dir
+source $script_dir/c.0.init_vars -project $project -input_dir $input_dir
 
 # modification ends
 
