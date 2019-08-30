@@ -180,8 +180,8 @@ echo "-- $prog : processing $#subj_proc_list subjects"
 echo "-- $prog : processing the following subjects $subj_proc_list" # modified
 echo "" # modified
 
-# input directory will be for the de-obliqued results under derivatives
-set in_dir = $study_root_in/$input_dir
+# input directory will be for the raw anats
+#set in_dir = $study_root_in/$input_dir
 
 # output directory will be derivates/$proc_dir
 set res_dir = $deriv_dir/$proc_dir
