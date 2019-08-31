@@ -92,12 +92,11 @@ while ( $ac <= $#argv )
       echo ""
       echo "  -project PATH       : path to project folder that you're working on" # modified
       echo "  -taskname NAME  NUM : name of the task you want to process and number" # modified
-      echo "  -taskname NAME  NUM : name of the task you want to process and number" # modified
+      echo "                           of runs of this task" # modified
       echo "  -input_dir PATH     : folder in [project] where NIFTIs are stored" # modified
       echo "                           default: rawdata"
       echo "  -proc_dir DIR       : root directory under 'derivates' for results"
-      echo "  -taskname NAME NUM  : name of the task you want to process and number" # modified
-      echo "                           of runs of this task" # modified
+      echo "                           default: AFNI_02_[taskname]" # modified
       echo "  -SSW_dir DIR        : directory under 'derivates' where SSwarper results are stored"
       echo "                           default: $SSW_dir" # modified
       echo "                           Note: This scripts REQUIRES that SSwarper is run because it"
@@ -315,13 +314,12 @@ foreach sid ( $subj_proc_list )
       @ nredo += 1
       \rm -fr $final_dir $res_dir/$sid/proc.$sid
    endif
-
    # check a couple of inputs
    # modified
    # loop through however many runs of this task the user has entered
    foreach run ( `seq 1 $tasknum `)
-      if ( ! -f $func_dir/${sid}_task-${taskname}_run-${run}_bold.nii.gz ) then
-         echo "** subject $sid missing run $run"
+      if ( ! -f $func_dir/${sid}_task-${taskname}_run-${run}_bold.nii ) then
+		 echo "** subject $sid missing run $run"
          @ missing_run += 1
       endif
    end
@@ -334,11 +332,12 @@ foreach sid ( $subj_proc_list )
    if ( $missing_run > 0 ) then
       echo "** subject $sid missing data"
       @ missing += 1 # modification ends
-   else if ( -d $final_dir/$sid/$sid.results ) then
+   else if ( -d $final_dir ) then
       echo "-- yay, already done with subject $sid"
       @ done += 1
    else
       set subjs_todo = ( $subjs_todo $sid )
+	  mkdir -p $final_dir
       @ todo += 1
    endif
 end
@@ -380,7 +379,7 @@ foreach sid ( $subjs_todo )
    # this is special: in_dir is orig data root, and also pass
    # the derivative root (for other inputs)
    set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum $SSW_dir $final_dir $dummy_scans $smooth $blur_size $stc $stc_pattern ) # modified
+                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum $SSW_dir $res_dir $dummy_scans $smooth $blur_size $stc $stc_pattern ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then
