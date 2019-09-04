@@ -206,6 +206,11 @@ foreach subj ( $subj_proc_list )
 				set d = 3
 			endif
 
+			#Print out a warning for how files will be converted. Let the user make an informed decision
+			echo "\nWARNING: The files are sorted in this this way:"
+			echo ${modpaths[*]} | tr " " "\n"
+			echo "Make sure you don't need to zero-pad your filenames!!"
+
 			#Go through each folder
 			foreach runnum ( `count -digits $d 1 $modnums[$modc] ` ) #$modpaths
 				
