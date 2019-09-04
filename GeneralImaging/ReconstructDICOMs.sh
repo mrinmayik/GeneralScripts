@@ -191,15 +191,27 @@ foreach subj ( $subj_proc_list )
 			
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
-				echo "\nERROR: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]. Something wrong!\n"
-				exit 1
+				echo "\nWARNING: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]."
+				echo "           Only the first $modnums[$modc] will be processed!\n"
 			endif
 			
-			set runnum = 1
+			#Set how much zero-padding needs to be done based on how many runs are available
+			#This is importantt to do because not having leading zeros messes up the order that
+			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
+			if ( $modnums[$modc] <= 9 ) then
+				set d = 1
+			else if ( $modnums[$modc] > 9 ) then
+				set d = 2
+			else if ( $modnums[$modc] > 99 ) then
+				set d = 3
+			endif
+
 			#Go through each folder
-			foreach rundir ( $modpaths )
+			foreach runnum ( `count -digits $d 1 $modnums[$modc] ` ) #$modpaths
 				
 				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
+				
+				set rundir = $modpaths[$runnum]
 				
 				#Set name of NIFTI based on whether we are working with funcs or not
 				if ( $modnames[$modc] == $funcName ) then
