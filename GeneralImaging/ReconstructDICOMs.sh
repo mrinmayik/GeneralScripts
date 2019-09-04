@@ -187,19 +187,38 @@ foreach subj ( $subj_proc_list )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			set modpaths = `echo $modpaths | fmt -1 | sort -n`
 			set outpath = $study_root_out/$subj/$modoutpaths[$modc]/
 			
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
-				echo "\nERROR: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]. Something wrong!\n"
-				exit 1
+				echo "\nWARNING: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]."
+				echo "           Only the first $modnums[$modc] will be processed!\n"
 			endif
 			
-			set runnum = 1
+			#Set how much zero-padding needs to be done based on how many runs are available
+			#This is importantt to do because not having leading zeros messes up the order that
+			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
+			if ( $modnums[$modc] <= 9 ) then
+				set d = 1
+			else if ( $modnums[$modc] > 9 ) then
+				set d = 2
+			else if ( $modnums[$modc] > 99 ) then
+				set d = 3
+			endif
+
+			#Print out a warning for how files will be converted. Let the user make an informed decision
+			echo "\nWARNING: The files are sorted in this this way:"
+			echo ${modpaths[*]} | tr " " "\n"
+			echo "Make sure you don't need to zero-pad your filenames!!"
+
 			#Go through each folder
-			foreach rundir ( $modpaths )
+			foreach runnum ( `count -digits $d 1 $modnums[$modc] ` ) #$modpaths
 				
 				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
+				
+				set rundir = $modpaths[$runnum]
+				echo "Converting $rundir"
 				
 				#Set name of NIFTI based on whether we are working with funcs or not
 				if ( $modnames[$modc] == $funcName ) then
