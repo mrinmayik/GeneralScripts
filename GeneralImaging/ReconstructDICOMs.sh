@@ -187,6 +187,7 @@ foreach subj ( $subj_proc_list )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			set modpaths = `echo $modpaths | fmt -1 | sort -n`
 			set outpath = $study_root_out/$subj/$modoutpaths[$modc]/
 			
 			#Do they match up with how many are expected based on user-input?
@@ -217,6 +218,7 @@ foreach subj ( $subj_proc_list )
 				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
 				
 				set rundir = $modpaths[$runnum]
+				echo "Converting $rundir"
 				
 				#Set name of NIFTI based on whether we are working with funcs or not
 				if ( $modnames[$modc] == $funcName ) then
