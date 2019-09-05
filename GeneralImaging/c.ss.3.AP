@@ -4,7 +4,7 @@
 # modify per command
 
 set nneeded = 7
-set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS SMOOTH BLUR_SIZE STC STC_PATTERN"
+set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS STC STC_PATTERN TLRC SMOOTH BLUR_SIZE"
 
 set sid = "$1"
 set indata_root = "$2"
@@ -14,10 +14,11 @@ set tasknum = "$5" # modified
 set SSdir = "$6" # modified
 set APdir = "$7" # modified
 set dummy_scans = "$8" # modified
-set smooth = "$9"
-set blur_size = "$10"
-set stc = "$11"
-set stc_pattern = "$12"
+set stc = "$9"
+set stc_pattern = "$10"
+set tlrc = "$11"
+set smooth = "$12"
+set blur_size = "$13"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -57,7 +58,12 @@ set anat_std      = $outdata_root/$SSdir/$sid/anatQQ.$sid.nii
 set anat_warp_aff = $outdata_root/$SSdir/$sid/anatQQ.$sid.aff12.1D
 set anat_warp_nl  = $outdata_root/$SSdir/$sid/anatQQ.${sid}_WARP.nii
 
-set EPI_files     = ($indata_root/$sid/func/${sid}_task-${task}_run-*_bold.nii)
+set EPI_files     = ( )
+# only take the number of epis indicated by user
+foreach runnum ( `seq -w 01 $tasknum ` )
+    set EPI_files = ( $EPI_files $indata_root/$sid/func/${sid}_task-${task}_run-${runnum}_bold.nii)
+end
+
 
 
 foreach file ( $anat_orig $anat_ss $anat_std $anat_warp_aff $anat_warp_nl \
@@ -88,7 +94,7 @@ cat << EOF >! $ap_script
 #
 
 afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
-      -blocks tshift align volreg blur mask scale tlrc			   \
+      -blocks tshift align volreg mask scale                       \
       -copy_anat $anat_ss                                          \
       -anat_has_skull no                                           \
       -anat_follower anat_w_skull anat $anat_orig                  \
@@ -97,21 +103,15 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -tshift_opts_ts -tpattern $stc_pattern                       \
       -radial_correlate yes                                        \
       -align_opts_aea -giant_move -cost lpc+ZZ -check_flip         \
-      -tlrc_base MNI152_2009_template_SSW.nii.gz                   \
-      -tlrc_NL_warp                                                \
-      -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl \
       -volreg_align_to MIN_OUTLIER                                 \
       -volreg_align_e2a                                            \
       -mask_epi_anat yes                                           \
-      -blur_size $blur_size                                        \
-      -blur_in_mask yes                                            \
 
 EOF
 
 # run afni_proc.py command, to save this text separately
 tcsh -x $ap_script |& tee out.$ap_script
 
-exit
 # and run resulting proc script
 tcsh -xef proc.$sid |& tee out.proc.$sid
 
@@ -119,20 +119,40 @@ tcsh -xef proc.$sid |& tee out.proc.$sid
 \rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
 
 exit       
--regress_stim_times $timing_files                            \
--regress_stim_labels $stim_classes                           \
--regress_stim_types AM1                                      \
--regress_basis_multi dmBLOCK                                 \
--regress_motion_per_run                                      \
--regress_censor_motion 0.3                                   \
--regress_censor_outliers 0.05                                \
--regress_compute_fitts                                       \
--regress_fout no                                             \
--regress_opts_3dD                                            \
--jobs $njobs                                                 \
--regress_3dD_stop                                            \
--regress_reml_exec                                           \
--regress_make_ideal_sum sum_ideal.1D                         \
--regress_est_blur_errts                                      \
--regress_run_clustsim no                                     \
--html_review_style pythonic
+
+afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
+      -blocks tshift align tlrc volreg mask blur scale regress     \
+      -copy_anat $anat_ss                                          \
+      -anat_has_skull no                                           \
+      -anat_follower anat_w_skull anat $anat_orig                  \
+      -dsets $EPI_files                                            \
+      -tcat_remove_first_trs 0                                     \
+      -tshift_opts_ts -tpattern alt+z2                             \
+      -radial_correlate yes                                        \
+      -align_opts_aea -giant_move -cost lpc+ZZ -check_flip         \
+      -tlrc_base MNI152_2009_template_SSW.nii.gz                   \
+      -tlrc_NL_warp                                                \
+      -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl \
+      -volreg_align_to MIN_OUTLIER                                 \
+      -volreg_align_e2a                                            \
+      -volreg_tlrc_warp                                            \
+      -mask_epi_anat yes                                           \
+      -blur_size 6                                                 \
+      -blur_in_mask yes                                            \
+      -regress_stim_times $timing_files                            \
+      -regress_stim_labels $stim_classes                           \
+      -regress_stim_types AM1                                      \
+      -regress_basis_multi dmBLOCK                                 \
+      -regress_motion_per_run                                      \
+      -regress_censor_motion 0.3                                   \
+      -regress_censor_outliers 0.05                                \
+      -regress_compute_fitts                                       \
+      -regress_fout no                                             \
+      -regress_opts_3dD                                            \
+         -jobs $njobs                                              \
+      -regress_3dD_stop                                            \
+      -regress_reml_exec                                           \
+      -regress_make_ideal_sum sum_ideal.1D                         \
+      -regress_est_blur_errts                                      \
+      -regress_run_clustsim no                                     \
+      -html_review_style pythonic
