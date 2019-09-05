@@ -328,7 +328,7 @@ foreach sid ( $subj_proc_list )
    # check a couple of inputs
    # modified
    # loop through however many runs of this task the user has entered
-   foreach run ( `seq 1 $tasknum `)
+   foreach run ( `seq -w 01 $tasknum `)
       if ( ! -f $func_dir/${sid}_task-${taskname}_run-${run}_bold.nii ) then
 		 echo "** subject $sid missing run $run"
          @ missing_run += 1
