@@ -106,6 +106,7 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -volreg_align_to MIN_OUTLIER                                 \
       -volreg_align_e2a                                            \
       -mask_epi_anat yes                                           \
+      -html_review_style pythonic
 
 EOF
 
