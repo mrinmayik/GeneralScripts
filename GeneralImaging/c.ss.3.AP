@@ -94,7 +94,7 @@ cat << EOF >! $ap_script
 #
 
 afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
-      -blocks tshift align volreg mask scale                       \
+      -blocks tshift align volreg mask scale regress               \
       -copy_anat $anat_ss                                          \
       -anat_has_skull no                                           \
       -anat_follower anat_w_skull anat $anat_orig                  \
@@ -106,7 +106,11 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -volreg_align_to MIN_OUTLIER                                 \
       -volreg_align_e2a                                            \
       -mask_epi_anat yes                                           \
-      -html_review_style pythonic
+      -regress_motion_per_run                                      \
+      -regress_censor_motion 0.3                                   \
+      -regress_censor_outliers 0.05                                \
+      -regress_apply_mot_types demean deriv                        \
+      -html_review_style basic
 
 EOF
 
@@ -157,3 +161,4 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -regress_est_blur_errts                                      \
       -regress_run_clustsim no                                     \
       -html_review_style pythonic
+
