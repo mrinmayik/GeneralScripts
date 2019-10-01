@@ -55,3 +55,17 @@ CheckTrialNumbers <- function(Vars){
     stop("Something is wrong in the Trial Numbers. INVESTIGATE!!!!")
   }
 }
+
+
+CheckRepBlock <- function(df, UseCol){
+  Rep <- MaxRepet <- 0
+  for(i in 2:nrow(df)){
+    if(df[i, UseCol]==df[(i-1), UseCol]){
+      Rep <- Rep+1
+    }else if(df[i, UseCol]!=df[(i-1), UseCol]){
+      MaxRepet <- max(MaxRepet, Rep)
+      Rep <- 0
+    }
+  }
+  return(MaxRepet)
+}
