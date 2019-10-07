@@ -62,7 +62,7 @@ set blur_size = 6
 set stc = Y
 set stc_pattern = alt+z2
 set tlrc = Y
-set DC = Y
+set dc = Y
 
 # set proc_dir
 set proc_dir = 0 # modified
@@ -109,8 +109,8 @@ while ( $ac <= $#argv )
       echo "  -stc Y/N PATTERN          : whether to turn on slice-time correction (default=$stc) and" # modified
       echo "                                direction of slice acquisition. See 3dTshift -help for info"
       echo "                                default: $stc_pattern"
-      echo "  -DC Y/N DSET_FOR DSET_REV : whether to turn on slice-time correction (default=$stc) and" # modified
-      echo "                                direction of slice acquisition. See 3dTshift -help for info"
+      echo "  -DC Y/N DSET_FOR DSET_REV : whether to turn on distortion correction (default=$dc) and" # modified
+      echo "                                name of forward a. See 3dTshift -help for info"
       echo "                                default: $stc_pattern"
       echo "  -tlrc Y/N                 : whether to non-linearly warp EPIs to standard space "
       echo "                                default: $tlrc"
@@ -380,7 +380,19 @@ foreach sid ( $subj_proc_list )
    endif
 end
 
+if ( $dc == Y ) then
+    if ( ! $dset_rev || ! $dset_for ) then
+        echo "Need forward and reverse dsets for distortion correction"
+		exit 1
+	endif
 
+	foreach dset ( $dset_rev $dset_for )
+        if ( ! -f $dset ) then
+            echo "** subject $sid missing $dset. Stopping"
+            exit 1
+        endif
+	end
+endif
 
 
 
@@ -421,7 +433,7 @@ foreach sid ( $subjs_todo )
    # this is special: in_dir is orig data root, and also pass
    # the derivative root (for other inputs)
    set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum $SSW_dir $res_dir $dummy_scans $stc $stc_pattern $tlrc $smooth $blur_size ) # modified
+                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum $SSW_dir $res_dir $dummy_scans $stc $stc_pattern $dc $dset_for $dset_rev $tlrc $smooth $blur_size ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then
