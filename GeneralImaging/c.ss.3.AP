@@ -4,7 +4,7 @@
 # modify per command
 
 set nneeded = 7
-set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS STC STC_PATTERN DC FMAP TLRC SMOOTH BLUR_SIZE"
+set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS STC STC_PATTERN DC FMAP_FOR FMAP_REV TLRC SMOOTH BLUR_SIZE"
 
 set sid = "$1"
 set indata_root = "$2"
@@ -17,10 +17,11 @@ set dummy_scans = "$8" # modified
 set stc = "$9"
 set stc_pattern = "$10"
 set DC = "$11"
-set fmap = "$12"
-set tlrc = "$13"
-set smooth = "$14"
-set blur_size = "$15"
+set fmap_for = "$12"
+set fmap_rev = "$13"
+set tlrc = "$14"
+set smooth = "$15"
+set blur_size = "$16"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -129,7 +130,36 @@ if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == N ) then
 
 EOF
 	
+else if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == Y ) then
+    cat << EOF >! $ap_script
 
+    # slice-time correction in ON (Pattern : $stc_pattern)
+    # tlrc is OFF
+    # smoothing is OFF
+    # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+    afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite     \
+        -blocks tshift align volreg mask scale regress              \
+        -copy_anat $anat_ss                                         \
+        -anat_has_skull no                                          \
+        -anat_follower anat_w_skull anat $anat_orig                 \
+        -dsets $EPI_files                                           \
+        -tcat_remove_first_trs $dummy_scans                         \
+        -tshift_opts_ts -tpattern $stc_pattern                      \
+        -blip_forward_dset $fmap_for                                \
+        -blip_reverse_dset $fmap_rev                                \
+        -radial_correlate yes                                       \
+        -align_opts_aea -giant_move -cost lpc+ZZ -check_flip        \
+        -volreg_align_to MIN_OUTLIER                                \
+        -volreg_align_e2a                                           \
+        -mask_epi_anat yes                                          \
+        -regress_motion_per_run                                     \
+        -regress_censor_motion 0.3                                  \
+        -regress_censor_outliers 0.05                               \
+        -regress_apply_mot_types demean deriv                       \
+        -html_review_style basic
+
+EOF
 	
 
 # run afni_proc.py command, to save this text separately
