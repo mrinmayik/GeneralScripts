@@ -62,6 +62,7 @@ set blur_size = 6
 set stc = Y
 set stc_pattern = alt+z2
 set tlrc = Y
+set DC = Y
 
 # set proc_dir
 set proc_dir = 0 # modified
@@ -92,27 +93,30 @@ while ( $ac <= $#argv )
       echo ""
       echo "options specific to this script"
       echo ""
-      echo "  -project PATH       : path to project folder that you're working on" # modified
-      echo "  -taskname NAME  NUM : name of the task you want to process and number" # modified
-      echo "                           of runs of this task" # modified
-      echo "  -input_dir PATH     : folder in [project] where NIFTIs are stored" # modified
-      echo "                           default: rawdata"
-      echo "  -proc_dir DIR       : root directory under 'derivates' for results"
-      echo "                           default: AFNI_02_[taskname]" # modified
-      echo "  -SSW_dir DIR        : directory under 'derivates' where SSwarper results are stored"
-      echo "                           default: $SSW_dir" # modified
-      echo "                           Note: This scripts REQUIRES that SSwarper is run because it"
-      echo "                              it will use transforms from this folder for alignment"
-      echo "  -dummy_scans NUM    : number of dummy scans to be discarded" # modified
-      echo "                           default: $dummy_scans"
-      echo "  -stc Y/N PATTERN    : whether to turn on slice-time correction (default=$stc) and" # modified
-      echo "                           direction of slice acquisition. See 3dTshift -help for info"
-      echo "                           default: $stc_pattern"
-      echo "  -tlrc Y/N           : whether to non-linearly warp EPIs to standard space "
-      echo "                           default: $tlrc"
-      echo "  -smoothing Y/N FWHM : whether to turn on smoothing (default=$smooth) and kernel " # modified
-      echo "                           size to use for smoothing"
-      echo "                           default: $blur_size"
+      echo "  -project PATH             : path to project folder that you're working on" # modified
+      echo "  -taskname NAME  NUM       : name of the task you want to process and number" # modified
+      echo "                                of runs of this task" # modified
+      echo "  -input_dir PATH           : folder in [project] where NIFTIs are stored" # modified
+      echo "                                default: rawdata"
+      echo "  -proc_dir DIR             : root directory under 'derivates' for results"
+      echo "                                default: AFNI_02_[taskname]" # modified
+      echo "  -SSW_dir DIR              : directory under 'derivates' where SSwarper results are stored"
+      echo "                                default: $SSW_dir" # modified
+      echo "                                Note: This scripts REQUIRES that SSwarper is run because it"
+      echo "                                it will use transforms from this folder for alignment"
+      echo "  -dummy_scans NUM          : number of dummy scans to be discarded" # modified
+      echo "                                default: $dummy_scans"
+      echo "  -stc Y/N PATTERN          : whether to turn on slice-time correction (default=$stc) and" # modified
+      echo "                                direction of slice acquisition. See 3dTshift -help for info"
+      echo "                                default: $stc_pattern"
+      echo "  -DC Y/N DSET_FOR DSET_REV : whether to turn on slice-time correction (default=$stc) and" # modified
+      echo "                                direction of slice acquisition. See 3dTshift -help for info"
+      echo "                                default: $stc_pattern"
+      echo "  -tlrc Y/N                 : whether to non-linearly warp EPIs to standard space "
+      echo "                                default: $tlrc"
+      echo "  -smoothing Y/N FWHM       : whether to turn on smoothing (default=$smooth) and kernel " # modified
+      echo "                                size to use for smoothing"
+      echo "                                default: $blur_size"
       echo ""
       echo "general options"
       echo ""
@@ -179,7 +183,7 @@ while ( $ac <= $#argv )
    else if ( "$argv[$ac]" == "-stc" ) then
       @ ac ++
       if ( $ac > $#argv ) then
-         echo "** -smoothing: missing argument"
+         echo "** -stc: missing argument"
          exit 1
       endif
       set stc = $argv[$ac]
@@ -187,10 +191,33 @@ while ( $ac <= $#argv )
       if ( $stc == Y ) then
           @ ac ++
           if ( $ac > $#argv ) then
-             echo "** -smoothing: missing argument"
+             echo "** -stc: missing argument"
              exit 1
           endif
-      set stc_pattern = $argv[$ac]
+          set stc_pattern = $argv[$ac]
+      endif
+   else if ( "$argv[$ac]" == "-dc" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -dc: missing argument"
+         exit 1
+      endif
+      set DC = $argv[$ac]
+      #only get blur size if smoothing is set to on
+      if ( $DC == Y ) then
+          @ ac ++
+          if ( $ac > $#argv ) then
+             echo "** -dc: missing argument"
+             exit 1
+          endif
+          set dset_for = $argv[$ac]
+         
+          @ ac ++
+          if ( $ac > $#argv ) then
+             echo "** -dc: missing argument"
+             exit 1
+          endif
+          set dset_rev = $argv[$ac]
       endif
    else if ( "$argv[$ac]" == "-tlrc" ) then
       @ ac ++
@@ -352,6 +379,10 @@ foreach sid ( $subj_proc_list )
       @ todo += 1
    endif
 end
+
+
+
+
 
 echo ""
 echo "-- $prog subjects: $missing missing, $done already done, $todo todo"
