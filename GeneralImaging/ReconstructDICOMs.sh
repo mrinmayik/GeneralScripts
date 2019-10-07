@@ -188,7 +188,7 @@ foreach subj ( $subj_proc_list )
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
 			set modpaths = `echo $modpaths | fmt -1 | sort -n`
-			set outpath = $study_root_out/$subj/$modoutpaths[$modc]/
+			set outpath = $study_root_out/$subj/$modoutpaths[$modc]
 			
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
@@ -200,7 +200,7 @@ foreach subj ( $subj_proc_list )
 			#This is importantt to do because not having leading zeros messes up the order that
 			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
 			if ( $modnums[$modc] <= 9 ) then
-				set d = 1
+				set d = 2
 			else if ( $modnums[$modc] > 9 ) then
 				set d = 2
 			else if ( $modnums[$modc] > 99 ) then
@@ -219,23 +219,27 @@ foreach subj ( $subj_proc_list )
 				
 				set rundir = $modpaths[$runnum]
 				echo "Converting $rundir"
-				
-				#Set name of NIFTI based on whether we are working with funcs or not
-				if ( $modnames[$modc] == $funcName ) then
-					set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
-				else
+                
+				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
+				#if you give the whole path in find, it'll return the whole path
+				set dcmpath = `find $rundir -type f -name "*$dcm_string*" | head -n 1` #$study_root_in/$subj/$rundir
+                #get just the name oft he folder
+                set dcmdir = `dirname $dcmpath`
+                
+				set niidirname = `basename $rundir`
+								
+                #Set name of NIFTI based on whether we are working with funcs or not
+                if ( $modnames[$modc] == $funcName ) then
+                    set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
+                else if ( $modnames[$modc] == fmap ) then
+                    set nii_name = ${subj}_task-${niidirname}_run-${runnum}_bold
+                else				
 					set nii_name = ${subj}_run-${runnum}_$modnames[$modc]
 				endif
 					
 				echo "NIFTI will be called ${nii_name}.nii"
 				
 				cd $rundir
-				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
-				#if you give the whole path in find, it'll return the whole path
-				set dcmpath = `find $rundir -type f -name "*$dcm_string*" | head -n 1` #$study_root_in/$subj/$rundir
-				
-				#get just the name oft he folder
-				set dcmdir = `dirname $dcmpath`
 				
 				cd $dcmdir
 				
