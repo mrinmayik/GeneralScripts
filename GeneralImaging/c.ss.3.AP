@@ -76,14 +76,6 @@ foreach file ( $anat_orig $anat_ss $anat_std $anat_warp_aff $anat_warp_nl $EPI_f
     endif
 end
 
-# If distortion correction is turned on, look for fmap file
-if ( $DC == Y ) then
-    if ( ! -f $fmap ) then
-        echo "** subject $sid, missing input $file"
-        exit 1
-    endif
-endif    
-
 
 # set -jobs based on known threads
 if ( $?SLURM_CPUS_PER_TASK ) then
