@@ -16,7 +16,7 @@ set APdir = "$7" # modified
 set dummy_scans = "$8" # modified
 set stc = "$9"
 set stc_pattern = "$10"
-set DC = "$11"
+set dc = "$11"
 set fmap_for = "$12"
 set fmap_rev = "$13"
 set tlrc = "$14"
@@ -92,7 +92,7 @@ cd $APdir/${sid}
 set ap_script = run.afni_proc.txt
 
 
-if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == N ) then
+if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
 
     cat << EOF >! $ap_script
 
@@ -122,8 +122,9 @@ if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == N ) then
 
 EOF
 	
-else if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == Y ) then
-    cat << EOF >! $ap_script
+else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
+    echo "Made it here"
+	cat << EOF >! $ap_script
 
     # slice-time correction in ON (Pattern : $stc_pattern)
     # tlrc is OFF
@@ -138,8 +139,8 @@ else if ( $STC == Y && $TLRC == N && $SMOOTH == N && $BLIP == Y ) then
         -dsets $EPI_files                                           \
         -tcat_remove_first_trs $dummy_scans                         \
         -tshift_opts_ts -tpattern $stc_pattern                      \
-        -blip_forward_dset $fmap_for                                \
-        -blip_reverse_dset $fmap_rev                                \
+        -blip_forward_dset ${fmap_for}                              \
+        -blip_reverse_dset ${fmap_rev}                              \
         -radial_correlate yes                                       \
         -align_opts_aea -giant_move -cost lpc+ZZ -check_flip        \
         -volreg_align_to MIN_OUTLIER                                \
