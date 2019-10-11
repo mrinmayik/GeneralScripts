@@ -153,6 +153,41 @@ else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
         -html_review_style basic
 
 EOF
+
+else if ( $stc == Y && $tlrc == Y && $smooth == N && $dc == Y ) then
+    echo "Made it here"
+	cat << EOF >! $ap_script
+
+    # slice-time correction in ON (Pattern : $stc_pattern)
+    # tlrc is ON
+    # smoothing is OFF
+    # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+    afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+        -blocks tshift align tlrc volreg mask scale regress             \
+        -copy_anat $anat_ss                                             \
+        -anat_has_skull no                                              \
+        -anat_follower anat_w_skull anat $anat_orig                     \
+        -dsets $EPI_files                                               \
+        -tcat_remove_first_trs $dummy_scans                             \
+        -tshift_opts_ts -tpattern $stc_pattern                          \
+        -blip_forward_dset ${fmap_for}                                  \
+        -blip_reverse_dset ${fmap_rev}                                  \
+        -radial_correlate yes                                           \
+        -align_opts_aea -giant_move -cost lpc+ZZ -check_flip            \
+        -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
+        -tlrc_NL_warp                                                   \
+        -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
+        -volreg_align_to MIN_OUTLIER                                    \
+        -volreg_align_e2a                                               \
+        -mask_epi_anat yes                                              \
+        -regress_motion_per_run                                         \
+        -regress_censor_motion 0.3                                      \
+        -regress_censor_outliers 0.05                                   \
+        -regress_apply_mot_types demean deriv                           \
+        -html_review_style basic
+
+EOF
 	
 
 # run afni_proc.py command, to save this text separately
