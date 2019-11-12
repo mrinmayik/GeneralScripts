@@ -17,6 +17,7 @@ bgtheme <- theme(panel.background = element_rect(fill = "white", colour = "black
                  panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "#D6D6D6"), 
                  panel.grid.minor = element_line(size = 0.5, linetype = 'solid', colour = "#D6D6D6"))
 stdbar <- geom_bar(stat="identity", position="dodge", color="#000000", size=1.5)
+canvastheme <- theme(plot.margin = margin(1, 0.5, 0.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 
 
 
