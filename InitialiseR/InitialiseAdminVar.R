@@ -58,7 +58,9 @@ CheckTrialNumbers <- function(Vars){
 }
 
 
-CheckRepBlock <- function(df, UseCol){
+CheckRepBlock <- function(df, UseCol, OrderBy){
+  #Order the rows before you start checking
+  df <- df[order(df[, OrderBy]),]
   Rep <- MaxRepet <- 0
   for(i in 2:nrow(df)){
     if(df[i, UseCol]==df[(i-1), UseCol]){
@@ -68,5 +70,7 @@ CheckRepBlock <- function(df, UseCol){
       Rep <- 0
     }
   }
-  return(MaxRepet)
+  #Adding one because when the values are finally different after a block of being the same, the last trial is not counted
+  #so value it returns is 1 less than the max repetitions
+  return(MaxRepet+1) 
 }
