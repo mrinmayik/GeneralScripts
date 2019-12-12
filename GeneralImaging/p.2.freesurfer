@@ -49,7 +49,7 @@ set anat_name = 0
 set input_dir = derivatives/AFNI_01_SSwarper
 
 # processing directory that goes under derivatives
-set out_dir = derivatives/FSOutput
+set out_dir = FSOutput
 
 # ======================================================================
 # process command-line arguments
@@ -143,6 +143,7 @@ foreach ac ( `seq 1 $#neededargs` )
    endif
 end
 
+echo $project
 
 # source the variable init file (to keep them mostly in one place)
 # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
@@ -165,7 +166,7 @@ echo "-- $prog : processing the following subjects $subj_proc_list" # modified
 echo "" # modified
 
 # output directory will be derivates/$proc_dir
-set res_dir = $deriv_dir/$proc_dir
+set res_dir = $deriv_dir/$out_dir
 echo "-- $prog : results will go under $res_dir"
 
 # for each subject, mask sure they exist
@@ -182,7 +183,7 @@ foreach sid ( $subj_proc_list )
       \rm -fr $res_dir/$sid
    endif
 
-   if ( ! -f $in_dir/$sid/anat/$anat_name ) then # modified
+   if ( ! -f $in_dir/$sid/$anat_name ) then # modified
       @ missing += 1
    else if ( -d $res_dir/$sid ) then
       echo "-- yay, already done with subject $sid"
