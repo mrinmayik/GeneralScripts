@@ -9,20 +9,21 @@
 # modify per command
 
 
-set nneeded = 3 #modified
-set use_args = "SID INDATA_ROOT RES_DIR ANAT_NAME"
+nneeded = 3 #modified
+use_args = "SID INDATA_ROOT RES_DIR ANAT_NAME"
 
-set sid = "$1"
-set indata_root = "$2"
-set res_dir = "$3"
-set anat_name = "$4" #modified
+sid = "$1"
+indata_root = "$2"
+res_dir = "$3"
+anat_name = "$4" #modified
 
 
 # ----------------------------------------------------------------------
 # static test
 
-if ( $#argv < $nneeded ) then
-    set script = `basename $0`
+if [ $#argv < $nneeded ]
+then
+    script = `basename $0`
     echo $script : need $nneeded parameters
     echo ""
     echo "usage: $script $use_args"
@@ -30,11 +31,13 @@ if ( $#argv < $nneeded ) then
     echo "command : $argv"
     echo ""
     exit 1
-endif
+fi
 
 
 # ----------------------------------------------------------------------
 # do the work
+
+export SUBJECTS_DIR=$res_dir
 
 #modified
 #Run Freesurfer
