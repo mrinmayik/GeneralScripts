@@ -165,7 +165,7 @@ echo "-- $prog : processing the following subjects $subj_proc_list" # modified
 echo "" # modified
 
 # output directory will be derivates/$proc_dir
-set res_dir = $project/$out_dir
+set res_dir = $deriv_dir/$proc_dir
 echo "-- $prog : results will go under $res_dir"
 
 # for each subject, mask sure they exist
@@ -205,23 +205,13 @@ if ( $missing > 0 ) then
 endif
 
 
-# now either write a swarm script or directly fire off the process
-
-# prep for swarm
-if ( $swarm ) then
-   mkdir -p $script_dir/out/run.sswarper
-   cd $script_dir/out/run.sswarper
-   set swarmfile = swarm.sswarper
-   echo -n "" >! $swarmfile
-endif
-
 # big finish, actually process some data
 foreach sid ( $subjs_todo )
    # input data comes from the deoblique tree under derivatives
    # slurm takes: SID INDATA_ROOT RUN_SCRIPT OUTDATA_ROOT ...
    # $in_dir and $res_dir were set in checking for inputs and results
    set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.1.sswarper $res_dir $anat_name ) # modified
+                    $script_dir/c.ss.2.freesurfer $res_dir $anat_name ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then
@@ -231,26 +221,5 @@ foreach sid ( $subjs_todo )
       $cmd
    endif
 end
-
-
-# possibly run swarm command
-if ( $swarm ) then
-   echo ""
-   echo "++ swarming $#subjs_todo subjects via file $swarmfile"
-   echo ""
-   # 12 hours, 6 GB RAM, 10 GB scratch, 4 threads
-   swarm -f $swarmfile                          \
-        -g 6 -t 4                               \
-        --time 12:00:00 --gres=lscratch:10      \
-        --verbose 2                             \
-        --module afni                           \
-        --merge-output
-
-   # tcsh p.1.sswarper -redo -swarm
-   #
-   # jobload
-   # squeue -u $USER
-   # scancel --user=$USER
-endif
 
 echo "== time == finished: `date`"
