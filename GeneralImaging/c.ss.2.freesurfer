@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#This script is modified from the afni demos distributed at the Milwaukee AFNI Bootcamp. 
+#It has been modified by Mrinmayi Kulkarni (mrinmayi@uwm.edu) to make it usable across projects to run freesurfer
+#Any lines that have been modified have a #modified comment so that my stupidity is not mistaken for
+#the original script
+
+# ----------------------------------------------------------------------
+# modify per command
+
+
+set nneeded = 3 #modified
+set use_args = "SID INDATA_ROOT ANAT_NAME"
+
+set sid = "$1"
+set indata_root = "$2"
+set anat_name = "$3" #modified
+
+
+# ----------------------------------------------------------------------
+# static test
+
+if ( $#argv < $nneeded ) then
+    set script = `basename $0`
+    echo $script : need $nneeded parameters
+    echo ""
+    echo "usage: $script $use_args"
+    echo ""
+    echo "command : $argv"
+    echo ""
+    exit 1
+endif
+
+
+# ----------------------------------------------------------------------
+# do the work
+
+#modified
+#Run Freesurfer
+recon-all -s $sid -i $anat_name -all
+
+
