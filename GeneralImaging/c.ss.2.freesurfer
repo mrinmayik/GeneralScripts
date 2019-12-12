@@ -9,13 +9,13 @@
 # modify per command
 
 
-nneeded = 3 #modified
-use_args = "SID INDATA_ROOT RES_DIR ANAT_NAME"
+nneeded=3 #modified
+use_args="SID INDATA_ROOT RES_DIR ANAT_NAME"
 
-sid = "$1"
-indata_root = "$2"
-res_dir = "$3"
-anat_name = "$4" #modified
+sid="$1"
+indata_root="$2"
+res_dir="$3"
+anat_name="$4" #modified
 
 
 # ----------------------------------------------------------------------
@@ -41,7 +41,7 @@ export SUBJECTS_DIR=$res_dir
 
 #modified
 #Run Freesurfer
-recon-all -s $sid -i $anat_name -all
+recon-all -s $sid -i $indata_root/$sid/$anat_name -all
 
 #Make HC subfields based on T1, just in case
 cd $res_dir/mri/orig/
