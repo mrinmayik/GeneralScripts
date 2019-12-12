@@ -211,8 +211,7 @@ foreach sid ( $subjs_todo )
    # input data comes from the deoblique tree under derivatives
    # slurm takes: SID INDATA_ROOT RUN_SCRIPT OUTDATA_ROOT ...
    # $in_dir and $res_dir were set in checking for inputs and results
-   set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.2.freesurfer $res_dir $anat_name ) # modified
+   set cmd = (bash $script_dir/c.ss.2.freesurfer $sid $in_dir $res_dir $anat_name ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then
