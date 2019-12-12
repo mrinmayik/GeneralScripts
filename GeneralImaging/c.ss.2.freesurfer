@@ -10,11 +10,12 @@
 
 
 set nneeded = 3 #modified
-set use_args = "SID INDATA_ROOT ANAT_NAME"
+set use_args = "SID INDATA_ROOT RES_DIR ANAT_NAME"
 
 set sid = "$1"
 set indata_root = "$2"
-set anat_name = "$3" #modified
+set res_dir = "$3"
+set anat_name = "$4" #modified
 
 
 # ----------------------------------------------------------------------
@@ -39,4 +40,9 @@ endif
 #Run Freesurfer
 recon-all -s $sid -i $anat_name -all
 
+#Make HC subfields based on T1, just in case
+cd $res_dir/mri/orig/
+mri_convert -it nii -ot mgz -i $sid.nii -o $sid.mgz
+
+recon-all -all -s $sid -hippocampal-subfields-T1
 
