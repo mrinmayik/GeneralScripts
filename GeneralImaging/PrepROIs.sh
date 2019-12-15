@@ -54,4 +54,81 @@ while ( $ac <= $#argv )
         echo ""
         exit 0
         # modified
+    else if ( "$argv[$ac]" == "-project" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -project: missing argument"
+            exit 1
+        endif
+        set project = $argv[$ac]
+    else if ( "$argv[$ac]" == "-input_dir" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -input_dir: missing argument"
+            exit 1
+        endif
+        set input_dir = $argv[$ac]
+    else if ( "$argv[$ac]" == "-out_dir" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -out_dir: missing argument"
+            exit 1
+        endif
+        set out_dir = $argv[$ac]
+    else if ( "$argv[$ac]" == "-fsdata" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -fsdata: missing argument"
+            exit 1
+        endif
+        set fsdata = $argv[$ac]
+    else if ( "$argv[$ac]" == "-numrois" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -numrois: missing argument"
+            exit 1
+        endif
+        set numrois = $argv[$ac]
+    else if ( "$argv[$ac]" == "-ROIs" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -ROIs: missing argument"
+            exit 1
+        endif
+        set roilabels = ( )
+        set roinames = ( )
+        foreach roinum ( $numrois )
+            @ ac ++
+            set roilabels = ( $roilabels $argv[$ac] )
+            @ ac ++
+            set roinames = ( $roinames $argv[$ac] )
+		end
+    else if ( "$argv[$ac]" == "-redo" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -redo: missing argument"
+            exit 1
+        endif
+        set redo = $argv[$ac]
+    else if ( "$argv[$ac]" == "-script_dir" ) then
+        @ ac ++
+        if ( $ac > $#argv ) then
+            echo "** -script_dir: missing argument"
+            exit 1
+        endif
+        set script_dir = $argv[$ac]
+    else
+       # everything else should be a subject
+       set subj_proc_list = ( $argv[$ac-] )
+       break
+    endif
+
+    @ ac ++
+ end
+
+
+        
+
+    
+
 
