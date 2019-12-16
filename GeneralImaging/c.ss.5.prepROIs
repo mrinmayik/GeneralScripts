@@ -42,14 +42,27 @@ set endnames = ` expr $startnames + $numrois - 1`
 set roilabels = ( $argv[$startlabels-$endlabels] )
 set roinames = ( $argv[$startnames-$endnames] )
 
-set outname = ` echo $k | cut -d '.' -f 1 `
+set outname = ` echo $fsdata | cut -d '.' -f 1 `
 
 cd $indata_root/$sid/mri/
-#convert the segmentation file
+#convert the segmentation file so it can be used by 3dcalc
 mri_label2vol --seg $indata_root/$sid/mri/$fsdata   \
     --regheader $indata_root/$sid/mri/$fsdata       \
-    --o ${outname}.nii                              \
+    --o $indata_root/$sid/mri/${outname}.nii.gz     \
 	--temp $indata_root/$sid/mri/orig/001.mgz
 
 
+echo $indata_root/$sid/mri/${outname}.nii
+
+#extract the ROIs
+foreach roinum ( ` seq 1 $numrois ` )
+    set label = ${roilabels[${roinum}]}
+	echo $label
+    set names = ${roinames[${roinum}]}
+	echo $names
+    #Make the ROI
+    3dcalc -a $indata_root/$sid/mri/${outname}.nii.gz   \
+        -expr " equals (a, ${label}) "                  \
+		-prefix $res_dir/$sid/${names}_ROIMask.nii.gz
+end
     
