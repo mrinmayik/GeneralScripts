@@ -109,12 +109,7 @@ while ( $ac <= $#argv )
 			@ ac ++
 		end
     else if ( "$argv[$ac]" == "-redo" ) then
-        @ ac ++
-        if ( $ac > $#argv ) then
-            echo "** -redo: missing argument"
-            exit 1
-        endif
-        set redo = $argv[$ac]
+        set redo = 1
         @ ac ++
     else if ( "$argv[$ac]" == "-script_dir" ) then
         @ ac ++
@@ -191,6 +186,7 @@ while ( $ac <= $#argv )
        @ done += 1
     else
        set subjs_todo = ( $subjs_todo $sid )
+	   mkdir -p $res_dir/$sid
        @ todo += 1
     endif
  end
