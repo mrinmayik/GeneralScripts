@@ -16,7 +16,7 @@ set prog = `basename $0`
 
 # list of subjects to process
 set project = 0
-set input_dir = FSOutput
+set input_dir = derivatives/FSOutput
 set fsdata = aseg.mgz
 
 # processing directory that goes under derivatives
@@ -127,8 +127,73 @@ while ( $ac <= $#argv )
  end
 
 
-        
+ # check that necessary arguments have been passed
+ # project path is needed because this path needs to be passed to c.0.int_vars
+ # taskname is required to set output directory name etc
+ set neededargs = ( $project )
+ set neededvars = ( project )
+ foreach ac ( `seq 1 $#neededargs` )
+    if ( ${neededargs[${ac}]} == 0 ) then
+ 	   echo "made it here4"
+ 	   echo "-${neededvars[${ac}]} is missing"
+ 	   exit 1
+    endif
+ end
 
+ echo $project
+
+ # source the variable init file (to keep them mostly in one place)
+ # sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
+ source $script_dir/c.0.init_vars -project $project -input_dir $input_dir
+        
+ # ======================================================================
+ # do some work...
+
+ echo "== time == starting : `date`"
+
+ # if subj_proc_list was not initialized, process everyone
+ if ( $#subj_proc_list == 0 ) then
+    set subj_proc_list = ( $all_subjects )
+    echo "++ $prog : processing all subjects"
+ endif
+ echo "-- $prog : processing $#subj_proc_list subjects"
+ echo "-- $prog : processing the following subjects $subj_proc_list" # modified
+ echo "" # modified
+
+ # output directory will be derivates/$proc_dir
+ set res_dir = $deriv_dir/$out_dir
+ echo "-- $prog : results will go under $res_dir"
+
+
+ # for each subject, mask sure they exist
+ set missing = 0
+ set done    = 0
+ set todo    = 0
+ set nredo   = 0
+ set subjs_todo = ()
+ foreach sid ( $subj_proc_list )
+    # if redo, delete old
+    if ( $redo &&  -d $res_dir/$sid ) then
+       echo "-- deleting subject $sid for re-run"
+       @ nredo += 1
+       \rm -fr $res_dir/$sid
+    endif
+
+    if ( ! -f $in_dir/$sid/mri/$fsdata ) then # modified
+       @ missing += 1
+    else if ( -d $res_dir/$sid ) then
+       echo "-- yay, already done with subject $sid"
+       @ done += 1
+    else
+       set subjs_todo = ( $subjs_todo $sid )
+       @ todo += 1
+    endif
+ end
+ echo "$in_dir/$sid/mri/$fsdata"
+ echo ""
+ echo "-- $prog subjects: $missing missing, $done already done, $todo todo"
+ echo "                   $nredo redo"
+ echo ""
     
 
 
