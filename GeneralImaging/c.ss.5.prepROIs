@@ -1,0 +1,48 @@
+#!/bin/tcsh
+
+#This script is got from the afni demos distributed at the Milwaukee AFNI Bootcamp. 
+#It has been modified by Mrinmayi Kulkarni (mrinmayi@uwm.edu) to make it usable across projects
+#Any lines that have been modified have a #modified comment so that my stupidity is not mistaken for
+#the original script
+
+#The following modifications have been made in this script:
+#	1. This has been written to take input from the command line and prepare ROIs so that 
+#      parameter estimates can be extracted (in a project independent manner)
+# ----------------------------------------------------------------------
+
+
+set nneeded = 7 #minimum required
+set use_args = "SID INDATA_ROOT RES_DIR FSDATA NUMROIS"
+
+set sid = "$1"
+set indata_root = "$2"
+set res_dir = "$3"
+set fsdata = "$4"
+set numrois = "$5"
+
+# static test
+
+if ( $#argv < $nneeded ) then
+    set script = `basename $0`
+    echo $script : need $nneeded parameters
+    echo ""
+    echo "usage: $script $use_args"
+    echo ""
+    echo "command : $argv"
+    echo ""
+    exit 1
+endif
+
+#When a list is passed as an argument it becomes a little tricky because it is not accepted as a list.
+#So these lists need to be rebuilt
+set startlabels = 6
+set endlabels = ` expr 6 + $numrois - 1`
+set startnames = ` expr $endlabels + 1 `
+set endnames = ` expr $startnames + $numrois - 1`
+set roilabels = ( $argv[$startlabels-$endlabels] )
+set roinames = ( $argv[$startnames-$endnames] )
+
+echo $roilabels
+echo $roinames
+
+    
