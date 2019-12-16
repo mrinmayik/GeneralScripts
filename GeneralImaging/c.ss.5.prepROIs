@@ -42,7 +42,14 @@ set endnames = ` expr $startnames + $numrois - 1`
 set roilabels = ( $argv[$startlabels-$endlabels] )
 set roinames = ( $argv[$startnames-$endnames] )
 
-echo $roilabels
-echo $roinames
+set outname = ` echo $k | cut -d '.' -f 1 `
+
+cd $indata_root/$sid/mri/
+#convert the segmentation file
+mri_label2vol --seg $indata_root/$sid/mri/$fsdata   \
+    --regheader $indata_root/$sid/mri/$fsdata       \
+    --o ${outname}.nii                              \
+	--temp $indata_root/$sid/mri/orig/001.mgz
+
 
     
