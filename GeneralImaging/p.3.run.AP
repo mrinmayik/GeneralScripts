@@ -72,6 +72,9 @@ set swarm = 0
 
 # output directory where SSwarper results are stored
 set SSW_dir = AFNI_01_SSwarper
+set fmap_dir = 0 #Initialise these so that if dc is set to N then there is something to pass to c.ss.3
+set dset_for = 0
+set dset_rev = 0
 
 # --------------------------------------------------
 # variables specifiec to this script
@@ -110,8 +113,7 @@ while ( $ac <= $#argv )
       echo "                                direction of slice acquisition. See 3dTshift -help for info"
       echo "                                default: $stc_pattern"
       echo "  -DC Y/N DSET_FOR DSET_REV : whether to turn on distortion correction (default=$dc) and" # modified
-      echo "                                name of forward a. See 3dTshift -help for info"
-      echo "                                default: $stc_pattern"
+      echo "                                name of forward a reverse dset"
       echo "  -tlrc Y/N                 : whether to non-linearly warp EPIs to standard space "
       echo "                                default: $tlrc"
       echo "  -smoothing Y/N FWHM       : whether to turn on smoothing (default=$smooth) and kernel " # modified
@@ -196,15 +198,15 @@ while ( $ac <= $#argv )
           endif
           set stc_pattern = $argv[$ac]
       endif
-   else if ( "$argv[$ac]" == "-dc" ) then
+   else if ( "$argv[$ac]" == "-DC" ) then
       @ ac ++
       if ( $ac > $#argv ) then
-         echo "** -dc: missing argument"
+         echo "** -DC: missing argument"
          exit 1
       endif
-      set DC = $argv[$ac]
+      set dc = $argv[$ac]
       #only get blur size if smoothing is set to on
-      if ( $DC == Y ) then
+      if ( $dc == Y ) then
           @ ac ++
           if ( $ac > $#argv ) then
              echo "** -dc: missing argument"
