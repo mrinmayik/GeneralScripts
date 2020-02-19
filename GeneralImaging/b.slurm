@@ -27,7 +27,7 @@ set run_script = "$3"
 set outdata_root = "$4"
 
 # allow use of SLURM temp directory
-set temp_ok = 1
+set temp_ok = 0
 
 # ----------------------------------------------------------------------
 # static test
@@ -50,7 +50,6 @@ if ( $#argv > $nneeded ) then
 else
    set trailers = ()
 endif
-
 
 # ================== Optional: Biowulf cluster =========================
 
