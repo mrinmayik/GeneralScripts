@@ -174,14 +174,16 @@ while ( $ac <= $#argv )
  foreach sid ( $subj_proc_list )
     # if redo, delete old
     if ( $redo &&  -d $res_dir/$sid ) then
-       echo "-- deleting subject $sid for re-run"
-       @ nredo += 1
-       \rm -fr $res_dir/$sid
+        echo "-- deleting masks for subject $sid for re-run"
+        @ nredo += 1
+        foreach names ( $roinames )
+            rm $res_dir/$sid/${names}_ROIMask.nii.gz
+        end
     endif
 
     if ( ! -f $in_dir/$sid/mri/$fsdata ) then # modified
        @ missing += 1
-    else if ( -d $res_dir/$sid ) then
+    else if ( -d $res_dir/$sid & $nredo == 0) then
        echo "-- yay, already done with subject $sid"
        @ done += 1
     else
