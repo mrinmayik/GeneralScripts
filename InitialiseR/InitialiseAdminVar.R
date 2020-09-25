@@ -20,6 +20,9 @@ stdbar <- geom_bar(stat="identity", position="dodge", color="#000000", size=1.5)
 canvastheme <- theme(plot.margin = margin(1, 0.5, 0.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 blankbgtheme <- theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
                       panel.background=element_blank(), axis.line = element_line(colour = "black"))
+posterxaxistheme <- theme(axis.title.x = element_text(face="bold", size=30), axis.text.x = element_text(colour="#000000", size=28)) #, family="Times"
+posteryaxistheme <- theme(axis.title.y = element_text(face="bold", size=30), axis.text.y = element_text(colour="#000000", size=24))
+posterlegendtheme <- theme(legend.text=element_text(face="bold", size=25), legend.title=element_text(face="bold", size=30))
 
 
 
