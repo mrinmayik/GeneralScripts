@@ -56,7 +56,7 @@ while ( $ac <= $#argv )
 	  echo "						Note: T2s will be named [participant_id]_[T2_folder_name].nii"
   	  echo "  -fmap NUM  		: how many fieldmaps you have"
 	  echo "						Note: make sure your fmap folders are called *fmap*"
-	  echo "						Note: T2s will be named [participant_id]_[fmap_folder_name].nii"
+	  echo "						Note: fmaps will be named [participant_id]_[fmap_folder_name].nii"
 	  echo "  -func NAME NUM    : name of the task you're converting followed by how many runs you have"
       echo "  -dcm_string NAME  : string in DICOM directory that will be used for looking for dicoms"
 	  echo "						default: *dcm"
