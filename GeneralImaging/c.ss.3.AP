@@ -104,6 +104,37 @@ set ap_script = run.afni_proc.txt
 
 
 if ( resting_state == Y ) then
+
+    module load /sharedapps/LS/psych_imaging/modulefiles/freesurfer/6.0
+    #First run @SUMA_Make_Spec_FS because the white matter and ventricle
+    #masks will be used in the preprocessing (if not already run)
+    if ( ! -d $FS_path/SUMA ) then
+        echo "Running the @SUMA_Make_Spec_FS for $sid"
+        cd $FS_path
+        @SUMA_Make_Spec_FS -sid ${sid} -NIFTI
+
+        #In newer versions of AFNI (post November 2019), the ventricle and
+        #and white matter masks are made as part of @SUMA_make_spec_FS.
+        #Since we're using the AFNI version from July 2019, these need to
+        #be made separately
+        #These steps are taken from the @SUMA_renumber_FS which is run as
+        #part of the newer version of @SUMA_make_spec_FS
+        3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Lateral-Ventricle,Right-Lateral-Ventricle>' \
+            -datum byte \
+            -expr 'step(a)' \
+            -prefix SUMA/fs_ap_latvent.nii
+        3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Cerebral-White-Matter,Left-Cerebellum-White-Matter,Right-Cerebral-White-Matter,Right-Cerebellum-White-Matter,CC_Posterior,CC_Mid_Posterior,CC_Central,CC_Mid_Anterior,CC_Anterior>' \
+            -datum byte \
+            -expr 'step(a)' \
+            -prefix SUMA/fs_ap_latvent.nii
+    endif
+
+    set aparc_anat = $FS_path/SUMA/aparc.a2009s+aseg.nii
+    set vent_roi = $FS_path/SUMA/fs_ap_latvent.nii
+    set wm_roi = $FS_path/SUMA/fs_ap_wm.nii
+
+    cd $APdir/${sid}
+
     cat << EOF >! $ap_script
     
     # Use the pipeline from Example 11 in the afni_proc.py that
@@ -115,10 +146,10 @@ if ( resting_state == Y ) then
         -copy_anat $anat_ss                                       \
         -anat_has_skull no                                        \
         -anat_follower anat_w_skull anat $anat_orig               \
-        -anat_follower_ROI aaseg anat aparc.a2009s+aseg.nii       \
-        -anat_follower_ROI aeseg epi aparc.a2009s+aseg.nii        \
-        -anat_follower_ROI FSvent epi fs_ap_latvent.nii.gz        \------
-        -anat_follower_ROI FSWe epi fs_ap_wm.nii.gz               \------
+        -anat_follower_ROI aaseg anat $aparc_anat                 \
+        -anat_follower_ROI aeseg epi $aparc_anat                  \
+        -anat_follower_ROI FSvent epi $vent_roi                   \
+        -anat_follower_ROI FSWe epi $wm_roi                       \
         -anat_follower_erode FSvent FSWe                          \
         -dsets $EPI_files                                         \
         -tcat_remove_first_trs $dummy_scans                       \
