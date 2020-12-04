@@ -70,6 +70,14 @@ foreach runnum ( `seq -w 01 $tasknum ` )
     set EPI_files = ( $EPI_files $indata_root/$sid/func/${sid}_task-${task}_run-${runnum}_bold.nii)
 end
 
+#First check if Freesurfer has been run, only if resting state is on
+set FS_path = $outdata_root/$FS_dir/$sid
+if ( $resting_state == Y ) then
+    if ( ! -d $FS_path ) then
+        echo "** subject $sid, Freesurfer folder doesn't exist"
+        ecit 1
+    endif
+endif
 
 # Check if files exist
 foreach file ( $anat_orig $anat_ss $anat_std $anat_warp_aff $anat_warp_nl $EPI_files )
