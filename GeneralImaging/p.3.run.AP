@@ -74,6 +74,7 @@ set swarm = 0
 
 # output directory where SSwarper results are stored
 set SSW_dir = AFNI_01_SSwarper
+set FS_dir = FSOutput
 set fmap_dir = 0 #Initialise these so that if dc is set to N then there is something to pass to c.ss.3
 set dset_for = 0
 set dset_rev = 0
@@ -127,6 +128,14 @@ while ( $ac <= $#argv )
       echo "                                Example 11 in the afni_prop.py help page. Options such as removal"
       echo "                                of first TRs, stc_pattern, blur size, alignment_move, if specified,"
       echo "                                will be used."
+      echo "                                Note: Freesurfer and SSWarper will need to be run before this "
+      echo "                                preprocessing is done."
+      echo "                                default SSWarper directory: $SSW_dir"
+      echo "                                default Freesurfer directory: $FS_dir"
+      echo "  -FS_dir DIR               : directory under 'derivates' where Freesurfer results are stored"
+      echo "                                default: $FS_dir" # modified
+      echo "                                Note: This scripts REQUIRES that SSwarper is run because it"
+      echo "                                it will use transforms from this folder for alignment"
       echo ""
       echo "general options"
       echo ""
@@ -463,7 +472,7 @@ foreach sid ( $subjs_todo )
                                           $SSW_dir $res_dir $dummy_scans $stc \
                                           $stc_pattern $dc $fmap_dir/$dset_for $fmap_dir/$dset_rev \
                                           $move $tlrc $smooth $blur_size \
-                                          $resting_state ) # modified
+                                          $resting_state $FS_dir ) # modified
 
    # either write to swarm file or just run
    if ( $swarm ) then

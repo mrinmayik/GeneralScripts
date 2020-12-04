@@ -23,6 +23,8 @@ set move = "$14"
 set tlrc = "$15"
 set smooth = "$16"
 set blur_size = "$17"
+set resting_state = "$18"
+set FS_dir= "$19"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -92,6 +94,50 @@ cd $APdir/${sid}
 
 set ap_script = run.afni_proc.txt
 
+
+if ( resting_state == Y ) then
+    cat << EOF >! $ap_script
+    
+    # Use the pipeline from Example 11 in the afni_proc.py that
+    # uses Freesurfer segmentation parcellation
+    afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite   \
+        -blocks despike tshift align tlrc volreg blur mask scale  \
+            regress                                               \
+        -radial_correlate_blocks tcat volreg                      \
+        -copy_anat anatSS.FT.nii                                  \
+        -anat_has_skull no                                        \
+        -anat_follower anat_w_skull anat anatU.FT.nii             \
+        -anat_follower_ROI aaseg anat aparc.a2009s+aseg.nii       \
+        -anat_follower_ROI aeseg epi aparc.a2009s+aseg.nii        \
+        -anat_follower_ROI FSvent epi fs_ap_latvent.nii.gz        \
+        -anat_follower_ROI FSWe epi fs_ap_wm.nii.gz               \
+        -anat_follower_erode FSvent FSWe                          \
+        -dsets FT_epi_r?+orig.HEAD                                \
+        -tcat_remove_first_trs 2                                  \
+        -align_opts_aea -cost lpc+ZZ -giant_move -check_flip      \
+        -tlrc_base MNI152_2009_template_SSW.nii.gz                \
+        -tlrc_NL_warp                                             \
+        -tlrc_NL_warped_dsets anatQQ.FT.nii anatQQ.FT.aff12.1D    \
+            anatQQ.FT_WARP.nii                                    \
+        -volreg_align_to MIN_OUTLIER                              \
+        -volreg_align_e2a                                         \
+        -volreg_tlrc_warp                                         \
+        -blur_size 4                                              \
+        -mask_epi_anat yes                                        \
+        -regress_motion_per_run                                   \
+        -regress_ROI_PC FSvent 3                                  \
+        -regress_ROI_PC_per_run FSvent                            \
+        -regress_make_corr_vols aeseg FSvent                      \
+        -regress_anaticor_fast                                    \
+        -regress_anaticor_label FSWe                              \
+        -regress_censor_motion 0.2                                \
+        -regress_censor_outliers 0.05                             \
+        -regress_apply_mot_types demean deriv                     \
+        -regress_est_blur_epits                                   \
+        -regress_est_blur_errts                                   \
+        -html_review_style pythonic
+
+EOF
 
 if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
     cat << EOF >! $ap_script
