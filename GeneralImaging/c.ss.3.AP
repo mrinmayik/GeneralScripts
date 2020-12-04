@@ -24,7 +24,7 @@ set tlrc = "$15"
 set smooth = "$16"
 set blur_size = "$17"
 set resting_state = "$18"
-set FS_dir= "$19"
+set FS_dir = "$19"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -75,7 +75,7 @@ set FS_path = $outdata_root/$FS_dir/$sid
 if ( $resting_state == Y ) then
     if ( ! -d $FS_path ) then
         echo "** subject $sid, Freesurfer folder doesn't exist"
-        ecit 1
+        exit 1
     endif
 endif
 
@@ -103,7 +103,7 @@ cd $APdir/${sid}
 set ap_script = run.afni_proc.txt
 
 
-if ( resting_state == Y ) then
+if ( $resting_state == Y ) then
 
     module load /sharedapps/LS/psych_imaging/modulefiles/freesurfer/6.0
     #First run @SUMA_Make_Spec_FS because the white matter and ventricle
@@ -126,7 +126,7 @@ if ( resting_state == Y ) then
         3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Cerebral-White-Matter,Left-Cerebellum-White-Matter,Right-Cerebral-White-Matter,Right-Cerebellum-White-Matter,CC_Posterior,CC_Mid_Posterior,CC_Central,CC_Mid_Anterior,CC_Anterior>' \
             -datum byte \
             -expr 'step(a)' \
-            -prefix SUMA/fs_ap_latvent.nii
+            -prefix SUMA/fs_ap_wm.nii
     endif
 
     set aparc_anat = $FS_path/SUMA/aparc.a2009s+aseg.nii
@@ -454,7 +454,7 @@ tcsh -x $ap_script |& tee out.$ap_script
 tcsh -xef proc.$sid |& tee out.proc.$sid
 
 # on edge, so free up a little space, scale is already in all_runs
-\rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
+#\rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
 
 exit       
 
