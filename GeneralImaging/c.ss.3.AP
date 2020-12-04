@@ -104,27 +104,29 @@ if ( resting_state == Y ) then
         -blocks despike tshift align tlrc volreg blur mask scale  \
             regress                                               \
         -radial_correlate_blocks tcat volreg                      \
-        -copy_anat anatSS.FT.nii                                  \
+        -copy_anat $anat_ss                                       \
         -anat_has_skull no                                        \
-        -anat_follower anat_w_skull anat anatU.FT.nii             \
+        -anat_follower anat_w_skull anat $anat_orig               \
         -anat_follower_ROI aaseg anat aparc.a2009s+aseg.nii       \
         -anat_follower_ROI aeseg epi aparc.a2009s+aseg.nii        \
-        -anat_follower_ROI FSvent epi fs_ap_latvent.nii.gz        \
-        -anat_follower_ROI FSWe epi fs_ap_wm.nii.gz               \
+        -anat_follower_ROI FSvent epi fs_ap_latvent.nii.gz        \------
+        -anat_follower_ROI FSWe epi fs_ap_wm.nii.gz               \------
         -anat_follower_erode FSvent FSWe                          \
-        -dsets FT_epi_r?+orig.HEAD                                \
-        -tcat_remove_first_trs 2                                  \
-        -align_opts_aea -cost lpc+ZZ -giant_move -check_flip      \
+        -dsets $EPI_files                                         \
+        -tcat_remove_first_trs $dummy_scans                       \
+        -align_opts_aea -cost $stc_pattern -$move                 \
+        -check_flip                                               \
         -tlrc_base MNI152_2009_template_SSW.nii.gz                \
         -tlrc_NL_warp                                             \
-        -tlrc_NL_warped_dsets anatQQ.FT.nii anatQQ.FT.aff12.1D    \
-            anatQQ.FT_WARP.nii                                    \
+        -tlrc_NL_warped_dsets $anat_std $anat_warp_aff            \
+            $anat_warp_nl                                         \
         -volreg_align_to MIN_OUTLIER                              \
         -volreg_align_e2a                                         \
         -volreg_tlrc_warp                                         \
-        -blur_size 4                                              \
+        -blur_size $blur_size                                     \
         -mask_epi_anat yes                                        \
         -regress_motion_per_run                                   \
+        -regress_bandpass 0.01 0.09                               \
         -regress_ROI_PC FSvent 3                                  \
         -regress_ROI_PC_per_run FSvent                            \
         -regress_make_corr_vols aeseg FSvent                      \
@@ -156,7 +158,7 @@ if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
         -tcat_remove_first_trs $dummy_scans                          \
         -tshift_opts_ts -tpattern $stc_pattern                       \
         -radial_correlate yes                                        \
-        -align_opts_aea -$move -cost lpc+ZZ -check_flip         \
+        -align_opts_aea -$move -cost lpc+ZZ -check_flip              \
         -volreg_align_to MIN_OUTLIER                                 \
         -volreg_align_e2a                                            \
         -mask_epi_anat yes                                           \
