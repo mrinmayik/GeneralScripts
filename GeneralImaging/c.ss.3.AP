@@ -180,7 +180,7 @@ if ( $resting_state == Y ) then
 
 EOF
 
-else if ( $resting_state == N )
+else if ( $resting_state == N ) then 
     if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
         cat << EOF >! $ap_script
 
