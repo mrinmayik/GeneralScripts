@@ -14,17 +14,18 @@ set tasknum = "$5" # modified
 set SSdir = "$6" # modified
 set APdir = "$7" # modified
 set dummy_scans = "$8" # modified
-set stc = "$9"
-set stc_pattern = "$10"
-set dc = "$11"
-set fmap_for = "$12"
-set fmap_rev = "$13"
-set move = "$14"
-set tlrc = "$15"
-set smooth = "$16"
-set blur_size = "$17"
-set resting_state = "$18"
-set FS_dir = "$19"
+set rm_end_TRs = "$9"
+set stc = "$10"
+set stc_pattern = "$11"
+set dc = "$12"
+set fmap_for = "$13"
+set fmap_rev = "$14"
+set move = "$15"
+set tlrc = "$16"
+set smooth = "$17"
+set blur_size = "$18"
+set resting_state = "$19"
+set FS_dir = "$20"
 
 # note: INDATA_ROOT  should be original tree, including EPI
 # note: OUTDATA_ROOT should be derivatives dir, we will assume children
@@ -153,6 +154,7 @@ if ( $resting_state == Y ) then
         -anat_follower_erode FSvent FSWe                          \
         -dsets $EPI_files                                         \
         -tcat_remove_first_trs $dummy_scans                       \
+        -tcat_remove_last_trs $rm_end_TRs                         \
         -align_opts_aea -cost lpc+ZZ -$move                       \
         -check_flip                                               \
         -tlrc_base MNI152_2009_template_SSW.nii.gz                \
@@ -166,14 +168,14 @@ if ( $resting_state == Y ) then
         -blur_size $blur_size                                     \
         -mask_epi_anat yes                                        \
         -regress_motion_per_run                                   \
-        -regress_bandpass 0.01 0.09                               \
+        -regress_bandpass 0.01 0.08                               \
         -regress_ROI_PC FSvent 3                                  \
         -regress_ROI_PC_per_run FSvent                            \
         -regress_make_corr_vols aeseg FSvent                      \
         -regress_anaticor_fast                                    \
         -regress_anaticor_label FSWe                              \
-        -regress_censor_motion 0.2                                \
-        -regress_censor_outliers 0.05                             \
+        -regress_censor_motion 3                                  \
+        -regress_censor_outliers 0.10                             \
         -regress_apply_mot_types demean deriv                     \
         -regress_est_blur_epits                                   \
         -regress_est_blur_errts                                   \
