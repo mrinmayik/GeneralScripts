@@ -200,6 +200,7 @@ else if ( $resting_state == N ) then
             -anat_follower anat_w_skull anat $anat_orig                  \
             -dsets $EPI_files                                            \
             -tcat_remove_first_trs $dummy_scans                          \
+            -tcat_remove_last_trs $rm_end_TRs                            \
             -tshift_opts_ts -tpattern $stc_pattern                       \
             -radial_correlate yes                                        \
             -align_opts_aea -$move -cost lpc+ZZ -check_flip              \
@@ -229,6 +230,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -radial_correlate yes                                           \
             -align_opts_aea -$move -cost lpc+ZZ -check_flip            \
@@ -262,6 +264,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                 \
             -dsets $EPI_files                                           \
             -tcat_remove_first_trs $dummy_scans                         \
+            -tcat_remove_last_trs $rm_end_TRs                           \
             -tshift_opts_ts -tpattern $stc_pattern                      \
             -blip_forward_dset ${fmap_for}                              \
             -blip_reverse_dset ${fmap_rev}                              \
@@ -293,6 +296,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -blip_forward_dset ${fmap_for}                                  \
             -blip_reverse_dset ${fmap_rev}                                  \
@@ -328,6 +332,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -blip_forward_dset ${fmap_for}                                  \
             -blip_reverse_dset ${fmap_rev}                                  \
@@ -359,6 +364,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -blip_forward_dset ${fmap_for}                                  \
             -blip_reverse_dset ${fmap_rev}                                  \
@@ -392,6 +398,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -blip_forward_dset ${fmap_for}                                  \
             -blip_reverse_dset ${fmap_rev}                                  \
@@ -429,6 +436,7 @@ EOF
             -anat_follower anat_w_skull anat $anat_orig                     \
             -dsets $EPI_files                                               \
             -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
             -radial_correlate yes                                           \
             -align_opts_aea -$move -cost lpc+ZZ -check_flip            \
@@ -472,6 +480,7 @@ afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -anat_follower anat_w_skull anat $anat_orig                  \
       -dsets $EPI_files                                            \
       -tcat_remove_first_trs 0                                     \
+      -tcat_remove_last_trs $rm_end_TRs                            \
       -tshift_opts_ts -tpattern alt+z2                             \
       -radial_correlate yes                                        \
       -align_opts_aea -$move -cost lpc+ZZ -check_flip         \
