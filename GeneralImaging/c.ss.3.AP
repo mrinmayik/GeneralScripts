@@ -155,6 +155,7 @@ if ( $resting_state == Y ) then
         -dsets $EPI_files                                         \
         -tcat_remove_first_trs $dummy_scans                       \
         -tcat_remove_last_trs $rm_end_TRs                         \
+        -tshift_opts_ts -tpattern $stc_pattern                    \
         -align_opts_aea -cost lpc+ZZ -$move                       \
         -check_flip                                               \
         -tlrc_base MNI152_2009_template_SSW.nii.gz                \
