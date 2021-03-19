@@ -195,7 +195,6 @@ else if ( $resting_state == N ) then
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite      \
             -blocks tshift align volreg mask scale regress               \
-            -radial_correlate yes                                        \
             -radial_correlate_blocks tcat volreg                         \
             -copy_anat $anat_ss                                          \
             -anat_has_skull no                                           \
@@ -226,7 +225,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align tlrc volreg mask scale regress             \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -261,7 +259,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite     \
             -blocks tshift align volreg mask scale regress              \
-            -radial_correlate yes                                       \
             -radial_correlate_blocks tcat volreg                        \
             -copy_anat $anat_ss                                         \
             -anat_has_skull no                                          \
@@ -294,7 +291,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align tlrc volreg mask scale regress             \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -331,7 +327,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align volreg mask scale regress                  \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -364,7 +359,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align volreg mask blur scale regress             \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -399,7 +393,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align tlrc volreg mask blur scale regress        \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -438,7 +431,6 @@ EOF
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
             -blocks tshift align tlrc volreg mask blur scale regress        \
-            -radial_correlate yes                                           \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
