@@ -6,6 +6,7 @@
 library(openxlsx)
 library(plyr)
 library(ggplot2)
+library(ez)
 
 
 #Set plotting variables
