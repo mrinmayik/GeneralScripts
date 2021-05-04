@@ -35,7 +35,8 @@ paperyaxistheme <- theme(axis.text.y = element_text(size=30),
 paperlegendtheme <- theme(legend.text=element_text(face="bold", size=30), legend.title=element_text(face="bold", size=35))
 papertickstheme <- theme(axis.ticks.length = unit(.25, "cm"))
 papercanvastheme <- theme(plot.margin = margin(1, 0.5, b=1.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
-  
+
+RmYGap <- scale_y_continuous(expand = c(0,0))
 
 
 
