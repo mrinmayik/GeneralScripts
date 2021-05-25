@@ -22,15 +22,16 @@ stdbar <- geom_bar(stat="identity", position="dodge", color="#000000", size=1.5)
 canvastheme <- theme(plot.margin = margin(1, 0.5, 0.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 blankbgtheme <- theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
                       panel.background=element_blank(), axis.line = element_line(colour = "black"))
+subtitletheme <- theme(plot.subtitle=element_text(size=14, hjust=0.5, face="italic", color="black"))
 
-posterxaxistheme <- theme(axis.title.x = element_text(face="bold", size=30), axis.text.x = element_text(colour="#000000", size=28)) #, family="Times"
+posterxaxistheme <- theme(axis.title.x = element_text(face="bold", size=30, vjust=-4), axis.text.x = element_text(colour="#000000", size=28)) #, family="Times"
 posteryaxistheme <- theme(axis.title.y = element_text(face="bold", size=30), axis.text.y = element_text(colour="#000000", size=24))
 posterlegendtheme <- theme(legend.text=element_text(face="bold", size=25), legend.title=element_text(face="bold", size=30))
 
-paperxaxistheme <- theme(axis.text.x = element_text(vjust = -2, size=30), 
-                         axis.title.x = element_text(vjust = -4, size=35))
+paperxaxistheme <- theme(axis.text.x = element_text(vjust = -1, size=28), 
+                         axis.title.x = element_text(vjust = -2, size=30))
 paperyaxistheme <- theme(axis.text.y = element_text(size=30), 
-                         axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0),
+                         axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 10, l = 0),
                                                      size=35))
 paperlegendtheme <- theme(legend.text=element_text(face="bold", size=30), legend.title=element_text(face="bold", size=35))
 papertickstheme <- theme(axis.ticks.length = unit(.25, "cm"))
@@ -95,3 +96,5 @@ CheckRepBlock <- function(df, UseCol, OrderBy){
   #so value it returns is 1 less than the max repetitions
   return(MaxRepet+1) 
 }
+
+
