@@ -98,3 +98,19 @@ CheckRepBlock <- function(df, UseCol, OrderBy){
 }
 
 
+#This function will add a column to df with FDR corrected pvalues. Adding a function so it can be used with ddply
+CorrectPVals <- function(df, pvalcol, usemethod="fdr"){
+  #Is raw p-value significant?
+  df[, "sig"] <- ifelse(df[, pvalcol]<=0.05, "*", "")
+  #Do bonferroni for free
+  df[, paste(pvalcol, "_BFcorrected", sep="")] <- p.adjust(df[, pvalcol], method="bonferroni")
+  #Is BF corrected p significant?
+  df[, paste("sig_BFcorrected", sep="")] <- ifelse(df[, paste(pvalcol, "_BFcorrected", sep="")]<=0.05, "*", "")
+  return(df)
+  
+  #Correct p's based on method entered
+  df[, paste(pvalcol, "_", usemethod, "corrected", sep="")] <- p.adjust(df[, pvalcol], method=usemethod)
+  #Is corrected p significant?
+  df[, paste("sig_", usemethod, "corrected", sep="")] <- ifelse(df[, paste(pvalcol, "_", usemethod, "corrected", sep="")]<=0.05, "*", "")
+  return(df)
+}
