@@ -13,12 +13,13 @@
 # modify per command
 
 
-set nneeded = 3 #modified
-set use_args = "SID INDATA_ROOT ANAT_NAME"
+set nneeded = 4 #modified
+set use_args = "SID INDATA_ROOT RESULTS_DIR ANAT_NAME"
 
 set sid = "$1"
 set indata_root = "$2"
-set anat_name = "$3" #modified
+set results_dir = "$3" #modified
+set anat_name = "$4" #modified
 
 
 # ----------------------------------------------------------------------
@@ -40,6 +41,8 @@ endif
 # do the work
 
 #modified
+cd $results_dir
+
 @SSwarper -input $indata_root/$sid/anat/${anat_name}	       \
           -base MNI152_2009_template_SSW.nii.gz                \
           -subid $sid                                          \
