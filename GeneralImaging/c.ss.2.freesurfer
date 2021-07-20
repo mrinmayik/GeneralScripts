@@ -41,11 +41,6 @@ export SUBJECTS_DIR=$res_dir
 
 #modified
 #Run Freesurfer
-recon-all -s $sid -i $indata_root/$sid/$anat_name -all
+recon-all -all -s $sid -i $indata_root/$sid/$anat_name -hippocampal-subfields-T1
 
-#Make HC subfields based on T1, just in case
-cd $res_dir/mri/orig/
-mri_convert -it nii -ot mgz -i $sid.nii -o $sid.mgz
-
-recon-all -all -s $sid -hippocampal-subfields-T1
 
