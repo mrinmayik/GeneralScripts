@@ -205,18 +205,11 @@ endif
 
 # big finish, actually process some data
 foreach sid ( $subjs_todo )
-   # input data comes from the deoblique tree under derivatives
-   # slurm takes: SID INDATA_ROOT RUN_SCRIPT OUTDATA_ROOT ...
-   # $in_dir and $res_dir were set in checking for inputs and results
    set cmd = (bash $script_dir/c.ss.2.freesurfer $sid $in_dir $res_dir $anat_name ) # modified
 
-   # either write to swarm file or just run
-   if ( $swarm ) then
-      echo $cmd >> $swarmfile
-   else
-      echo "++ running: $cmd"
-      $cmd
-   endif
+   #and run the command
+   echo "++ running: $cmd"
+   $cmd
 end
 
 echo "== time == finished: `date`"
