@@ -1,7 +1,7 @@
 #!/bin/tcsh
 
 #This script is got from the afni demos distributed at the Milwaukee AFNI Bootcamp.
-#It has been modified by Mrinmayi Kulkarni (mrinmayi@uwm.edu) to make it usable across projects
+#It has been modified by Mrinmayi Kulkarni (mrinmayi.17@gmail.com) to make it usable across projects
 #Any lines that have been modified have a #modified comment so that my stupidity is not mistaken for
 #the original script
 
@@ -9,15 +9,13 @@
 #sswarper
 
 
-# ===================== based on S.0.template.txt ======================
-
 # Run recon_all for a subject list passed on the command line.
 
 # Now, build a script of commands to run.
 
 # ======================================================================
 # init variables and allow command line options:
-#    script_dir, study_root_in, study_root_out, deriv_dir,
+#    script_dir, project, deriv_dir, input_dir
 #    all_subjects, nsubj
 # Note that script_dir will need to be set basically every
 #      time, since calling 'init_vars' will be universal.

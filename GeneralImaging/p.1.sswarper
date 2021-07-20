@@ -13,7 +13,7 @@
 
 # ======================================================================
 # init variables and allow command line options:
-#    script_dir, study_root_in, study_root_out, deriv_dir,
+#    script_dir, project, deriv_dir, input_dir
 #    all_subjects, nsubj
 # Note that script_dir will need to be set basically every
 #      time, since calling 'init_vars' will be universal.
