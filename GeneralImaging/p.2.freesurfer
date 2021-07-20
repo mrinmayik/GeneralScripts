@@ -130,16 +130,16 @@ set neededargs = ( $project $anat_name )
 set neededvars = ( project anat_name )
 foreach ac ( `seq 1 $#neededargs` )
    if ( ${neededargs[${ac}]} == 0 ) then
-	   echo "made it here4"
-	   echo "-${neededvars[${ac}]} is missing"
-	   exit 1
+      echo "made it here4"
+      echo "-${neededvars[${ac}]} is missing"
+      exit 1
    endif
 end
 
 echo $project
 
 # source the variable init file (to keep them mostly in one place)
-# sets: study_root_in, study_root_out, deriv_dir, all_subjects, nsubj
+# sets: deriv_dir, all_subjects, nsubj
 source $script_dir/c.0.init_vars -project $project -input_dir $input_dir
 
 # modification ends
@@ -158,7 +158,7 @@ echo "-- $prog : processing $#subj_proc_list subjects"
 echo "-- $prog : processing the following subjects $subj_proc_list" # modified
 echo "" # modified
 
-# output directory will be derivates/$proc_dir
+# output directory will be derivates/$out_dir (out_dir provided by user)
 set res_dir = $deriv_dir/$out_dir
 echo "-- $prog : results will go under $res_dir"
 
@@ -193,9 +193,13 @@ echo "                   $nredo redo"
 echo ""
 
 # allow missing subjects?  seems like an error, but there could be reasons
-if ( $missing > 0 ) then
-   echo "** $prog : will not proceed if any subjects are missing"
-   exit 1
+if ( $allow_missing == 0 ) then
+   if ( $missing > 0 ) then
+      echo "** $prog : will not proceed if any subjects are missing"
+      exit 1
+   endif
+else if ( $allow_missing == 1 ) then
+   echo "** $prog : subject is missing, but proceeding with the rest"
 endif
 
 
