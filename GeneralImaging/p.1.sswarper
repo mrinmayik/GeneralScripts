@@ -28,7 +28,7 @@ set redo = 0
 set allow_missing = 0
 
 # --------------------------------------------------
-# variables specifiec to this script
+# variables specific to this script
 
 # the name of this script
 set prog = `basename $0`
