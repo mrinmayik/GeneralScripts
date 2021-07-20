@@ -106,7 +106,6 @@ CorrectPVals <- function(df, pvalcol, usemethod="fdr"){
   df[, paste(pvalcol, "_BFcorrected", sep="")] <- p.adjust(df[, pvalcol], method="bonferroni")
   #Is BF corrected p significant?
   df[, paste("sig_BFcorrected", sep="")] <- ifelse(df[, paste(pvalcol, "_BFcorrected", sep="")]<=0.05, "*", "")
-  return(df)
   
   #Correct p's based on method entered
   df[, paste(pvalcol, "_", usemethod, "corrected", sep="")] <- p.adjust(df[, pvalcol], method=usemethod)
