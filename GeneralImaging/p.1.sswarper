@@ -190,6 +190,11 @@ echo "-- $prog subjects: $missing missing, $done already done, $todo todo"
 echo "                   $nredo redo"
 echo ""
 
+# make the res_dir if it was deleted
+if ( ! -d ${res_dir}/${sid} ) then
+   mkdir -p ${res_dir}/${sid}
+endif
+
 # allow missing subjects?  seems like an error, but there could be reasons
 if ( $allow_missing == 0 ) then
    if ( $missing > 0 ) then
