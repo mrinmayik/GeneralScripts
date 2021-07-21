@@ -75,7 +75,7 @@ foreach file ( $anat_orig $anat_ss $anat_std $anat_warp_aff $anat_warp_nl $EPI_f
 end
 
 
-# set -jobs based on known threads
+# set -jobs based on known threads on a cluster with a slurm scheduler
 if ( $?SLURM_CPUS_PER_TASK ) then
   setenv OMP_NUM_THREADS $SLURM_CPUS_PER_TASK
   set njobs = $SLURM_CPUS_PER_TASK
@@ -104,16 +104,23 @@ if ( $resting_state == Y ) then
         #and white matter masks are made as part of @SUMA_make_spec_FS.
         #Since we're using the AFNI version from July 2019, these need to
         #be made separately
-        #These steps are taken from the @SUMA_renumber_FS which is run as
-        #part of the newer version of @SUMA_make_spec_FS
-        3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Lateral-Ventricle,Right-Lateral-Ventricle>' \
-            -datum byte \
-            -expr 'step(a)' \
-            -prefix SUMA/fs_ap_latvent.nii
-        3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Cerebral-White-Matter,Left-Cerebellum-White-Matter,Right-Cerebral-White-Matter,Right-Cerebellum-White-Matter,CC_Posterior,CC_Mid_Posterior,CC_Central,CC_Mid_Anterior,CC_Anterior>' \
-            -datum byte \
-            -expr 'step(a)' \
-            -prefix SUMA/fs_ap_wm.nii
+        #Check if these files exist. If not, make them.
+        if ( ! -f $FS_path/SUMA/fs_ap_latvent.nii ) then 
+            #These steps are taken from the @SUMA_renumber_FS which is run as
+            #part of the newer version of @SUMA_make_spec_FS
+            echo "Could not find the ventricle mask. Making it."
+            3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Lateral-Ventricle,Right-Lateral-Ventricle>' \
+                -datum byte \
+                -expr 'step(a)' \
+                -prefix SUMA/fs_ap_latvent.nii
+        endif
+        if ( ! -f $FS_path/SUMA/fs_ap_wm.nii ) then
+            echo "Could not find the white matter mask. Making it."
+            3dcalc -a $FS_path/SUMA/aparc.a2009s+aseg.nii'<Left-Cerebral-White-Matter,Left-Cerebellum-White-Matter,Right-Cerebral-White-Matter,Right-Cerebellum-White-Matter,CC_Posterior,CC_Mid_Posterior,CC_Central,CC_Mid_Anterior,CC_Anterior>' \
+                -datum byte \
+                -expr 'step(a)' \
+                -prefix SUMA/fs_ap_wm.nii
+        endif
     endif
 
     set aparc_anat = $FS_path/SUMA/aparc.a2009s+aseg.nii
