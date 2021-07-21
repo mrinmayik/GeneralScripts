@@ -422,61 +422,18 @@ if ( $missing > 0 ) then
    endif
 endif
 
-# now either write a swarm script or directly fire off the process
-
-# prep for swarm
-if ( $swarm ) then
-   mkdir -p $script_dir/out/run.$cmd_label
-   cd $script_dir/out/run.$cmd_label
-   set swarmfile = swarm.$cmd_label
-   echo -n "" >! $swarmfile
-endif
-
-# setenv SUBJECTS_DIR $res_dir
 
 # big finish, actually process some data
 foreach sid ( $subjs_todo )
-   # input data comes from the deoblique tree under derivatives
-   # slurm takes: SID INDATA_ROOT RUN_SCRIPT OUTDATA_ROOT ...
-   # $in_dir and $res_dir were set in checking for inputs and results
+   set cmd = ( tcsh $script_dir/c.ss.3.AP $sid $in_dir $deriv_dir $taskname $tasknum \
+                        $SSW_dir $res_dir $dummy_scans "$rm_end_TRs" $stc \
+                        $stc_pattern $dc $fmap_dir/$dset_for $fmap_dir/$dset_rev \
+                        $move $tlrc $smooth $blur_size \
+                        $resting_state $FS_dir ) # modified
 
-   # this is special: in_dir is orig data root, and also pass
-   # the derivative root (for other inputs)
-   set cmd = ( tcsh $script_dir/b.slurm $sid $in_dir \
-                    $script_dir/c.ss.3.AP $in_dir $deriv_dir $taskname $tasknum \
-                                          $SSW_dir $res_dir $dummy_scans "$rm_end_TRs" $stc \
-                                          $stc_pattern $dc $fmap_dir/$dset_for $fmap_dir/$dset_rev \
-                                          $move $tlrc $smooth $blur_size \
-                                          $resting_state $FS_dir ) # modified
-
-   # either write to swarm file or just run
-   if ( $swarm ) then
-      echo $cmd >> $swarmfile
-   else
-      echo "++ running: $cmd"
-      $cmd
-   endif
+   #and run the command
+   echo "++ running: $cmd"
+   $cmd
 end
-
-# possibly run swarm command
-if ( $swarm ) then
-   echo ""
-   echo "++ swarming $#subjs_todo subjects via file $swarmfile"
-   echo ""
-
-   swarm -f $swarmfile                          \
-        -g 8 -t 4                               \
-        --time 20:00:00 --gres=lscratch:50      \
-        --verbose 2                             \
-        --module afni                           \
-        --module python/2.7                     \
-        --merge-output
-
-   # tcsh p.3.make_spec -redo -swarm
-   #
-   # jobload
-   # squeue -u $USER
-   # scancel --user=$USER
-endif
 
 echo "== time == finished: `date`"
