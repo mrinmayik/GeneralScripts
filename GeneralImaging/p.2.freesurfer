@@ -49,7 +49,7 @@ set out_dir = FSOutput
 set ac = 1
 while ( $ac <= $#argv )
    if ( "$argv[$ac]" == "-help" ) then
-      echo "$prog       - run @SSwarper for the given subjects"
+      echo "$prog       - run Freesurfer for the given subjects"
       echo ""
       echo "usage: $prog [options...] subj subj ..."
       echo ""
