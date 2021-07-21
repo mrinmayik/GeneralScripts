@@ -177,47 +177,18 @@ if ( $resting_state == Y ) then
 
 EOF
 
-else if ( $resting_state == N ) then 
-    if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
-        cat << EOF >! $ap_script
+else if ( $resting_state == N ) then
 
-        # slice-time correction in ON (Pattern : $stc_pattern)
-        # tlrc is OFF
-        # smoothing is OFF
-        # distortion correction is OFF
-
-        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite      \
-            -blocks tshift align volreg mask scale regress               \
-            -radial_correlate_blocks tcat volreg                         \
-            -copy_anat $anat_ss                                          \
-            -anat_has_skull no                                           \
-            -anat_follower anat_w_skull anat $anat_orig                  \
-            -dsets $EPI_files                                            \
-            -tcat_remove_first_trs $dummy_scans                          \
-            -tcat_remove_last_trs $rm_end_TRs                            \
-            -tshift_opts_ts -tpattern $stc_pattern                       \
-            -align_opts_aea -$move -cost lpc+ZZ -check_flip              \
-            -volreg_align_to MIN_OUTLIER                                 \
-            -volreg_align_e2a                                            \
-            -mask_epi_anat yes                                           \
-            -regress_motion_per_run                                      \
-            -regress_censor_motion 0.3                                   \
-            -regress_censor_outliers 0.05                                \
-            -regress_apply_mot_types demean deriv                        \
-            -html_review_style pythonic
-
-EOF
-
-    else if ( $stc == Y && $tlrc == Y && $smooth == N && $dc == N ) then
+    if ( $stc == Y && $tlrc == Y && $smooth == Y && $dc == Y ) then
         cat << EOF >! $ap_script
 
         # slice-time correction in ON (Pattern : $stc_pattern)
         # tlrc is ON
-        # smoothing is OFF
-        # distortion correction is OFF
+        # smoothing is ON (Smoothing kernel : $blur_size)
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
 
         afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
-            -blocks tshift align tlrc volreg mask scale regress             \
+            -blocks tshift align tlrc volreg mask blur scale regress        \
             -radial_correlate_blocks tcat volreg                            \
             -copy_anat $anat_ss                                             \
             -anat_has_skull no                                              \
@@ -226,6 +197,8 @@ EOF
             -tcat_remove_first_trs $dummy_scans                             \
             -tcat_remove_last_trs $rm_end_TRs                               \
             -tshift_opts_ts -tpattern $stc_pattern                          \
+            -blip_forward_dset ${fmap_for}                                  \
+            -blip_reverse_dset ${fmap_rev}                                  \
             -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
             -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
             -tlrc_NL_warp                                                   \
@@ -234,42 +207,12 @@ EOF
             -volreg_align_e2a                                               \
             -volreg_tlrc_warp                                               \
             -mask_epi_anat yes                                              \
+            -blur_size $blur_size                                           \
+            -blur_in_mask yes                                               \
             -regress_motion_per_run                                         \
             -regress_censor_motion 0.3                                      \
             -regress_censor_outliers 0.05                                   \
             -regress_apply_mot_types demean deriv                           \
-            -html_review_style pythonic
-
-EOF
-
-    else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
-        cat << EOF >! $ap_script
-
-        # slice-time correction in ON (Pattern : $stc_pattern)
-        # tlrc is OFF
-        # smoothing is OFF
-        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
-
-        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite     \
-            -blocks tshift align volreg mask scale regress              \
-            -radial_correlate_blocks tcat volreg                        \
-            -copy_anat $anat_ss                                         \
-            -anat_has_skull no                                          \
-            -anat_follower anat_w_skull anat $anat_orig                 \
-            -dsets $EPI_files                                           \
-            -tcat_remove_first_trs $dummy_scans                         \
-            -tcat_remove_last_trs $rm_end_TRs                           \
-            -tshift_opts_ts -tpattern $stc_pattern                      \
-            -blip_forward_dset ${fmap_for}                              \
-            -blip_reverse_dset ${fmap_rev}                              \
-            -align_opts_aea -$move -cost lpc+ZZ -check_flip             \
-            -volreg_align_to MIN_OUTLIER                                \
-            -volreg_align_e2a                                           \
-            -mask_epi_anat yes                                          \
-            -regress_motion_per_run                                     \
-            -regress_censor_motion 0.3                                  \
-            -regress_censor_outliers 0.05                               \
-            -regress_apply_mot_types demean deriv                       \
             -html_review_style pythonic
 
 EOF
@@ -310,38 +253,6 @@ EOF
 
 EOF
 
-    else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
-        cat << EOF >! $ap_script
-
-        # slice-time correction in ON (Pattern : $stc_pattern)
-        # tlrc is OFF
-        # smoothing is OFF
-        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
-
-        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
-            -blocks tshift align volreg mask scale regress                  \
-            -radial_correlate_blocks tcat volreg                            \
-            -copy_anat $anat_ss                                             \
-            -anat_has_skull no                                              \
-            -anat_follower anat_w_skull anat $anat_orig                     \
-            -dsets $EPI_files                                               \
-            -tcat_remove_first_trs $dummy_scans                             \
-            -tcat_remove_last_trs $rm_end_TRs                               \
-            -tshift_opts_ts -tpattern $stc_pattern                          \
-            -blip_forward_dset ${fmap_for}                                  \
-            -blip_reverse_dset ${fmap_rev}                                  \
-            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
-            -volreg_align_to MIN_OUTLIER                                    \
-            -volreg_align_e2a                                               \
-            -mask_epi_anat yes                                              \
-            -regress_motion_per_run                                         \
-            -regress_censor_motion 0.3                                      \
-            -regress_censor_outliers 0.05                                   \
-            -regress_apply_mot_types demean deriv                           \
-            -html_review_style pythonic
-
-EOF
-
     else if ( $stc == Y && $tlrc == N && $smooth == Y && $dc == Y ) then
         cat << EOF >! $ap_script
 
@@ -365,44 +276,6 @@ EOF
             -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
             -volreg_align_to MIN_OUTLIER                                    \
             -volreg_align_e2a                                               \
-            -mask_epi_anat yes                                              \
-            -blur_size $blur_size                                           \
-            -blur_in_mask yes                                               \
-            -regress_motion_per_run                                         \
-            -regress_censor_motion 0.3                                      \
-            -regress_censor_outliers 0.05                                   \
-            -regress_apply_mot_types demean deriv                           \
-            -html_review_style pythonic
-
-EOF
-
-    else if ( $stc == Y && $tlrc == Y && $smooth == Y && $dc == Y ) then
-        cat << EOF >! $ap_script
-
-        # slice-time correction in ON (Pattern : $stc_pattern)
-        # tlrc is ON
-        # smoothing is ON (Smoothing kernel : $blur_size)
-        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
-
-        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
-            -blocks tshift align tlrc volreg mask blur scale regress        \
-            -radial_correlate_blocks tcat volreg                            \
-            -copy_anat $anat_ss                                             \
-            -anat_has_skull no                                              \
-            -anat_follower anat_w_skull anat $anat_orig                     \
-            -dsets $EPI_files                                               \
-            -tcat_remove_first_trs $dummy_scans                             \
-            -tcat_remove_last_trs $rm_end_TRs                               \
-            -tshift_opts_ts -tpattern $stc_pattern                          \
-            -blip_forward_dset ${fmap_for}                                  \
-            -blip_reverse_dset ${fmap_rev}                                  \
-            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
-            -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
-            -tlrc_NL_warp                                                   \
-            -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
-            -volreg_align_to MIN_OUTLIER                                    \
-            -volreg_align_e2a                                               \
-            -volreg_tlrc_warp                                               \
             -mask_epi_anat yes                                              \
             -blur_size $blur_size                                           \
             -blur_in_mask yes                                               \
@@ -450,6 +323,144 @@ EOF
 
 EOF
 
+    else if ( $stc == N && $tlrc == Y && $smooth == Y && $dc == Y ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in OFF
+        # tlrc is ON
+        # smoothing is ON (Smoothing kernel : $blur_size)
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks align tlrc volreg mask blur scale regress               \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -blip_forward_dset ${fmap_for}                                  \
+            -blip_reverse_dset ${fmap_rev}                                  \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
+            -tlrc_NL_warp                                                   \
+            -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -volreg_tlrc_warp                                               \
+            -mask_epi_anat yes                                              \
+            -blur_size $blur_size                                           \
+            -blur_in_mask yes                                               \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
+    else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in ON (Pattern : $stc_pattern)
+        # tlrc is OFF
+        # smoothing is OFF
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite     \
+            -blocks tshift align volreg mask scale regress              \
+            -radial_correlate_blocks tcat volreg                        \
+            -copy_anat $anat_ss                                         \
+            -anat_has_skull no                                          \
+            -anat_follower anat_w_skull anat $anat_orig                 \
+            -dsets $EPI_files                                           \
+            -tcat_remove_first_trs $dummy_scans                         \
+            -tcat_remove_last_trs $rm_end_TRs                           \
+            -tshift_opts_ts -tpattern $stc_pattern                      \
+            -blip_forward_dset ${fmap_for}                              \
+            -blip_reverse_dset ${fmap_rev}                              \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip             \
+            -volreg_align_to MIN_OUTLIER                                \
+            -volreg_align_e2a                                           \
+            -mask_epi_anat yes                                          \
+            -regress_motion_per_run                                     \
+            -regress_censor_motion 0.3                                  \
+            -regress_censor_outliers 0.05                               \
+            -regress_apply_mot_types demean deriv                       \
+            -html_review_style pythonic
+
+EOF
+
+    else if ( $stc == Y && $tlrc == Y && $smooth == N && $dc == N ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in ON (Pattern : $stc_pattern)
+        # tlrc is ON
+        # smoothing is OFF
+        # distortion correction is OFF
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks tshift align tlrc volreg mask scale regress             \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -tshift_opts_ts -tpattern $stc_pattern                          \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
+            -tlrc_NL_warp                                                   \
+            -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -volreg_tlrc_warp                                               \
+            -mask_epi_anat yes                                              \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
+else if ( $stc == N && $tlrc == Y && $smooth == N && $dc == Y ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in OFF
+        # tlrc is ON
+        # smoothing is OFF
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks align tlrc volreg mask scale regress                    \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -blip_forward_dset ${fmap_for}                                  \
+            -blip_reverse_dset ${fmap_rev}                                  \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
+            -tlrc_NL_warp                                                   \
+            -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -volreg_tlrc_warp                                               \
+            -mask_epi_anat yes                                              \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
     else if ( $stc == Y && $tlrc == N && $smooth == Y && $dc == N ) then
         cat << EOF >! $ap_script
 
@@ -481,6 +492,151 @@ EOF
             -html_review_style pythonic
 
 EOF
+
+    else if ( $stc == N && $tlrc == N && $smooth == Y && $dc == Y ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in OFF (Pattern : $stc_pattern)
+        # tlrc is OFF
+        # smoothing is ON (Smoothing kernel : $blur_size)
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks align tlrc volreg mask blur scale regress               \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -blip_forward_dset ${fmap_for}                                  \
+            -blip_reverse_dset ${fmap_rev}                                  \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -volreg_tlrc_warp                                               \
+            -mask_epi_anat yes                                              \
+            -blur_size $blur_size                                           \
+            -blur_in_mask yes                                               \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
+    else if ( $stc == N && $tlrc == Y && $smooth == Y && $dc == N ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in OFF
+        # tlrc is ON
+        # smoothing is ON (Smoothing kernel : $blur_size)
+        # distortion correction is OFF
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks align tlrc volreg mask blur scale regress               \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -tlrc_base MNI152_2009_template_SSW.nii.gz                      \
+            -tlrc_NL_warp                                                   \
+            -tlrc_NL_warped_dsets $anat_std $anat_warp_aff $anat_warp_nl    \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -volreg_tlrc_warp                                               \
+            -mask_epi_anat yes                                              \
+            -blur_size $blur_size                                           \
+            -blur_in_mask yes                                               \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
+
+======================
+    if ( $stc == Y && $tlrc == N && $smooth == N && $dc == N ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in ON (Pattern : $stc_pattern)
+        # tlrc is OFF
+        # smoothing is OFF
+        # distortion correction is OFF
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite      \
+            -blocks tshift align volreg mask scale regress               \
+            -radial_correlate_blocks tcat volreg                         \
+            -copy_anat $anat_ss                                          \
+            -anat_has_skull no                                           \
+            -anat_follower anat_w_skull anat $anat_orig                  \
+            -dsets $EPI_files                                            \
+            -tcat_remove_first_trs $dummy_scans                          \
+            -tcat_remove_last_trs $rm_end_TRs                            \
+            -tshift_opts_ts -tpattern $stc_pattern                       \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip              \
+            -volreg_align_to MIN_OUTLIER                                 \
+            -volreg_align_e2a                                            \
+            -mask_epi_anat yes                                           \
+            -regress_motion_per_run                                      \
+            -regress_censor_motion 0.3                                   \
+            -regress_censor_outliers 0.05                                \
+            -regress_apply_mot_types demean deriv                        \
+            -html_review_style pythonic
+
+EOF
+
+    
+
+    
+
+    
+
+    else if ( $stc == Y && $tlrc == N && $smooth == N && $dc == Y ) then
+        cat << EOF >! $ap_script
+
+        # slice-time correction in ON (Pattern : $stc_pattern)
+        # tlrc is OFF
+        # smoothing is OFF
+        # distortion correction is ON (Field map : $fmap_for, $fmap_rev)
+
+        afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite         \
+            -blocks tshift align volreg mask scale regress                  \
+            -radial_correlate_blocks tcat volreg                            \
+            -copy_anat $anat_ss                                             \
+            -anat_has_skull no                                              \
+            -anat_follower anat_w_skull anat $anat_orig                     \
+            -dsets $EPI_files                                               \
+            -tcat_remove_first_trs $dummy_scans                             \
+            -tcat_remove_last_trs $rm_end_TRs                               \
+            -tshift_opts_ts -tpattern $stc_pattern                          \
+            -blip_forward_dset ${fmap_for}                                  \
+            -blip_reverse_dset ${fmap_rev}                                  \
+            -align_opts_aea -$move -cost lpc+ZZ -check_flip                 \
+            -volreg_align_to MIN_OUTLIER                                    \
+            -volreg_align_e2a                                               \
+            -mask_epi_anat yes                                              \
+            -regress_motion_per_run                                         \
+            -regress_censor_motion 0.3                                      \
+            -regress_censor_outliers 0.05                                   \
+            -regress_apply_mot_types demean deriv                           \
+            -html_review_style pythonic
+
+EOF
+
+    
+
+    
+
+    
 
     endif #Close non-resting state preprocessing case
 
