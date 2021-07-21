@@ -722,6 +722,14 @@ EOF
 
 endif #Close resting-state preprocessing case
 
+#Just make sure a script was written out. In case one of the options was incorrect,
+#or a case is not covered, then a script will not be written out. If this happens,
+#exit with an error.
+
+if ( ! -f $ap_script ) then
+    echo "$ap_script was not found! Was it not written out? Check your options for preprocessing."
+    exit 1
+endif
 
 # run afni_proc.py command, to save this text separately
 tcsh -x $ap_script |& tee out.$ap_script
@@ -730,10 +738,10 @@ tcsh -x $ap_script |& tee out.$ap_script
 tcsh -xef proc.$sid |& tee out.proc.$sid
 
 # on edge, so free up a little space, scale is already in all_runs
-#\rm $sid.results/pb03.$sid.r0*.scale+tlrc.BRIK
 
 exit
 
+#Complete command from Example 6b from the afni_proc help page
 afni_proc.py -subj_id $sid -script proc.$sid -scr_overwrite        \
       -blocks tshift align tlrc volreg mask blur scale regress     \
       -radial_correlate yes                                        \
