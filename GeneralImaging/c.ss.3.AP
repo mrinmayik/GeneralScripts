@@ -3,8 +3,8 @@
 # ----------------------------------------------------------------------
 # modify per command
 
-set nneeded = 7
-set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS STC STC_PATTERN DC FMAP_FOR FMAP_REV MOVE TLRC SMOOTH BLUR_SIZE"
+set nneeded = 20
+set use_args = "SID INDATA_ROOT OUTDATA_ROOT TASKNAME TASKNUM SSDIR APDIR DUMMYSCANS RM_END_TRS STC STC_PATTERN DC FMAP_FOR FMAP_REV MOVE TLRC SMOOTH BLUR_SIZE RESTING_STATE FS_DIR"
 
 set sid = "$1"
 set indata_root = "$2"
@@ -27,18 +27,6 @@ set blur_size = "$18"
 set resting_state = "$19"
 set FS_dir = "$20"
 
-# note: INDATA_ROOT  should be original tree, including EPI
-# note: OUTDATA_ROOT should be derivatives dir, we will assume children
-
-# inputs: 
-#    AFNI_01_SSwarper   - anats: orig, SS, warped; warps
-#    Freesurfer_01_afni - masks and FS datasets
-#    main data root     - EPI
-#    AFNI_02_MGT_NL     - cur dir - timing files
-#
-# ==> let $indata_root be 'derivatives', so we don't need to pass all
-
-
 # ----------------------------------------------------------------------
 # static test
 
@@ -56,8 +44,6 @@ endif
 
 # ----------------------------------------------------------------------
 # do the work
-
-# no ventrical PC regression
 
 set anat_orig     = $outdata_root/$SSdir/$sid/anatU.$sid.nii
 set anat_ss       = $outdata_root/$SSdir/$sid/anatSS.$sid.nii
