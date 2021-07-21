@@ -196,13 +196,14 @@ if ( ! -d ${res_dir}/${sid} ) then
 endif
 
 # allow missing subjects?  seems like an error, but there could be reasons
-if ( $allow_missing == 0 ) then
-   if ( $missing > 0 ) then
+if ( $missing > 0 ) then
+   if ( $allow_missing ) then
+      echo "** $prog : proceeding even with $missing missing subjects ..."
+      sleep 3
+   else
       echo "** $prog : will not proceed if any subjects are missing"
       exit 1
    endif
-else if ( $allow_missing == 1 ) then
-   echo "** $prog : subject is missing, but proceeding with the rest"
 endif
 
 
