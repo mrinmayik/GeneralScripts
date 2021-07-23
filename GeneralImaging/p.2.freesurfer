@@ -192,6 +192,11 @@ echo "-- $prog subjects: $missing missing, $done already done, $todo todo"
 echo "                   $nredo redo"
 echo ""
 
+# make the res_dir if it was deleted. Don't add subject here because Freesurfer makes the final directory
+if ( ! -d ${res_dir}/ ) then
+   mkdir -p ${res_dir}/
+endif
+
 # allow missing subjects?  seems like an error, but there could be reasons
 if ( $missing > 0 ) then
    if ( $allow_missing ) then
