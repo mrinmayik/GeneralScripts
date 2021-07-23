@@ -36,6 +36,13 @@ if ( $#argv < $nneeded ) then
     exit 1
 endif
 
+# set -jobs based on known threads on a cluster with a slurm scheduler
+if ( $?SLURM_CPUS_PER_TASK ) then
+  setenv OMP_NUM_THREADS $SLURM_CPUS_PER_TASK
+  set njobs = $SLURM_CPUS_PER_TASK
+else
+  set njobs = 8
+endif
 
 # ----------------------------------------------------------------------
 # do the work
