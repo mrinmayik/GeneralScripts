@@ -55,3 +55,12 @@ tcsh ${ScriptPath}/p.3.run.AP                           \
     -SSW_dir AFNI_01_SSwarper                           \
     ${subj_id}
 
+#Optional STEP 5: Extract ROIs from each participant's Freesurfer segmentation
+tcsh ${ScriptPath}/p.5.prepROIs                         \
+    -project ${ProjectPath}                             \
+    -numrois 8                                          \
+    -ROIs 1027 ${sid}_L_dlPFC 2027 ${sid}_R_dlPFC 1012 ${sid}_L_lOFC 1014 ${sid}_L_mOFC 2012 ${sid}_R_lOFC 2014 ${sid}_R_mOFC 1028 ${sid}_L_dmPFC 2028 ${sid}_R_dmPFC                           \
+    -redo                                               \
+    -out_dir ROIs                                       \
+    -fsdata aparc+aseg.mgz                              \
+    $sid
