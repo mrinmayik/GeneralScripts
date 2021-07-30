@@ -59,8 +59,15 @@ tcsh ${ScriptPath}/p.3.run.AP                           \
 tcsh ${ScriptPath}/p.5.prepROIs                         \
     -project ${ProjectPath}                             \
     -numrois 8                                          \
-    -ROIs 1027 ${sid}_L_dlPFC 2027 ${sid}_R_dlPFC 1012 ${sid}_L_lOFC 1014 ${sid}_L_mOFC 2012 ${sid}_R_lOFC 2014 ${sid}_R_mOFC 1028 ${sid}_L_dmPFC 2028 ${sid}_R_dmPFC                           \
+    -ROIs 1027 ${subj_id}_L_dlPFC                       \
+    2027 ${subj_id}_R_dlPFC                             \
+    1012 ${subj_id}_L_lOFC                              \
+    1014 ${subj_id}_L_mOFC                              \
+    2012 ${subj_id}_R_lOFC                              \
+    2014 ${subj_id}_R_mOFC                              \
+    1028 ${subj_id}_L_dmPFC                             \
+    2028 ${subj_id}_R_dmPFC                             \
     -redo                                               \
     -out_dir ROIs                                       \
     -fsdata aparc+aseg.mgz                              \
-    $sid
+    ${subj_id}
