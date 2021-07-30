@@ -1,13 +1,13 @@
 #!/bin/tcsh
 
 #This script is got from the afni demos distributed at the Milwaukee AFNI Bootcamp. 
-#It has been modified by Mrinmayi Kulkarni (mrinmayi@uwm.edu) to make it usable across projects
+#It has been modified by Mrinmayi Kulkarni (mrinmayi.17@gmail.com) to make it usable across projects
 #Any lines that have been modified have a #modified comment so that my stupidity is not mistaken for
 #the original script
 
 #The following modifications have been made in this script:
-#	1. This has been written to take input from the command line and prepare ROIs so that 
-#      parameter estimates can be extracted (in a project independent manner)
+#    1. This has been written to take input from the command line and prepare ROIs so that 
+#       parameter estimates can be extracted (in a project independent manner)
 # ----------------------------------------------------------------------
 
 
@@ -49,7 +49,7 @@ cd $indata_root/$sid/mri/
 mri_label2vol --seg $indata_root/$sid/mri/$fsdata   \
     --regheader $indata_root/$sid/mri/$fsdata       \
     --o $indata_root/$sid/mri/${outname}.nii.gz     \
-	--temp $indata_root/$sid/mri/orig/001.mgz
+    --temp $indata_root/$sid/mri/orig/001.mgz
 
 
 echo $indata_root/$sid/mri/${outname}.nii
@@ -57,12 +57,11 @@ echo $indata_root/$sid/mri/${outname}.nii
 #extract the ROIs
 foreach roinum ( ` seq 1 $numrois ` )
     set label = ${roilabels[${roinum}]}
-	echo $label
+    echo $label
     set names = ${roinames[${roinum}]}
-	echo $names
+    echo $names
     #Make the ROI
     3dcalc -a $indata_root/$sid/mri/${outname}.nii.gz   \
         -expr " equals (a, ${label}) "                  \
-		-prefix $res_dir/$sid/${names}_ROIMask.nii.gz
+        -prefix $res_dir/$sid/${names}_ROIMask.nii.gz
 end
-    

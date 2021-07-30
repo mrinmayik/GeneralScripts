@@ -13,12 +13,13 @@
 # modify per command
 
 
-set nneeded = 3 #modified
-set use_args = "SID INDATA_ROOT ANAT_NAME"
+set nneeded = 4 #modified
+set use_args = "SID INDATA_ROOT RESULTS_DIR ANAT_NAME"
 
 set sid = "$1"
 set indata_root = "$2"
-set anat_name = "$3" #modified
+set results_dir = "$3" #modified
+set anat_name = "$4" #modified
 
 
 # ----------------------------------------------------------------------
@@ -35,13 +36,22 @@ if ( $#argv < $nneeded ) then
     exit 1
 endif
 
+# set -jobs based on known threads on a cluster with a slurm scheduler
+if ( $?SLURM_CPUS_PER_TASK ) then
+  setenv OMP_NUM_THREADS $SLURM_CPUS_PER_TASK
+  set njobs = $SLURM_CPUS_PER_TASK
+else
+  set njobs = 8
+endif
 
 # ----------------------------------------------------------------------
 # do the work
 
 #modified
-@SSwarper -input $indata_root/$sid/anat/${anat_name}	       \
+cd ${results_dir}/${sid}
+
+@SSwarper -input $indata_root/$sid/anat/${anat_name}           \
           -base MNI152_2009_template_SSW.nii.gz                \
           -subid $sid                                          \
-          -odir .
+          -odir ${results_dir}/${sid}/
 
