@@ -5,11 +5,11 @@ This repository contains scripts that are built to be project-independent. They 
 This folder contains scripts that will implement general preprocessing of task-based and resting state fMRI data using AFNI and Freesurfer. These scripts check input, process data and organise it into BIDS-compliant folders. All default paths in the folders are setup to use the BIDS format. You can, of course change these defaults using apporpriate flags.
 
 I have scripts to run the following four preprocessing steps:
- * STEP 1: Reconstruct NIFTIs from functional, anatomical and field map DICOMs using AFNI's dcm2niix_afni (ReconstructDICOMs.sh)
- * STEP 2: Preprocess anatomical data using AFNI's @SSwarper (p.1.sswarper)
- * STEP 3: Segment T1 anatomical scan using Freesurfer's recon_all (p.2.freesurfer)
- * STEP 4: Preprocess functional data using AFNI's afni_proc.py (p.3.run.AP; see note below)
- * Optional STEP 5: Extract ROIs from individual participant's Freesurfer segmentation (p.5.prepROIs)
+ * **STEP 1:** Reconstruct NIFTIs from functional, anatomical and field map DICOMs using AFNI's dcm2niix_afni (ReconstructDICOMs.sh)
+ * **STEP 2:** Preprocess anatomical data using AFNI's @SSwarper (p.1.sswarper)
+ * **STEP 3:** Segment T1 anatomical scan using Freesurfer's recon_all (p.2.freesurfer)
+ * **STEP 4:** Preprocess functional data using AFNI's afni_proc.py (p.3.run.AP; see note below)
+ * **Optional STEP 5:** Extract ROIs from individual participant's Freesurfer segmentation (p.5.prepROIs)
 
 **Note about STEP 4:** afni_proc.py produces really helpful quality control reports. These can only be generated if the final regression block is conducted. For this reason, the afni_proc.py command used here performs regression (using 3dDeconvolve) on the functional data without any task-based regressors (i.e., it pretends like you have a resting state dataset). This regression model however *does* contain motion and linear drift regressors. This is helpful to see how many degrees of freedom you have left over after censoring noisy time points and including these "regressors of no interest".
 
