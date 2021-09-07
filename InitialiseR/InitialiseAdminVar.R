@@ -7,6 +7,7 @@ library(openxlsx)
 library(plyr)
 library(ggplot2)
 library(ez)
+library(tidyr)
 
 
 #Set plotting variables
