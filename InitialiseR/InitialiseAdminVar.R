@@ -31,7 +31,7 @@ posterlegendtheme <- theme(legend.text=element_text(face="bold", size=25), legen
 
 paperxaxistheme <- theme(axis.text.x = element_text(vjust = -1, size=28), 
                          axis.title.x = element_text(vjust = -2, size=30))
-paperxaxistheme_tilt <- theme(axis.text.x = element_text(size=28, angle = 45, hjust = 1), 
+paperxaxistheme_tilt <- theme(axis.text.x = element_text(size=22, angle = 45, hjust = 1), 
                               axis.title.x = element_text(vjust = -2, size=30))
 paperyaxistheme <- theme(axis.text.y = element_text(size=30), 
                          axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 10, l = 0),
