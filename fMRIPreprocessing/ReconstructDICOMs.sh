@@ -18,11 +18,13 @@ set T1Data = 0
 set T2Data = 0
 set fmap = 0
 set func = 0
+set angio = 0
 set T1Num = 0
 set T2Num = 0
 set fmapNum = 0
-set funcName = 0
 set funcNum = 0
+set angioNum = 0
+set funcName = 0
 
 set dcm_string = .dcm
 
@@ -60,6 +62,9 @@ while ( $ac <= $#argv )
 	  echo "						Note: make sure your fmap folders are called *fmap*"
 	  echo "						Note: fmaps will be named [participant_id]_[fmap_folder_name].nii"
 	  echo "  -func NAME NUM    : name of the task you're converting followed by how many runs you have"
+	  echo "  -angioData NUM    : how many angiographs do you have"
+	  echo "						Note: make sure your angiography folders are called *angio*"
+	  echo "						Note: angiography scans will be named [participant_id]_[angio_folder_name].nii"
       echo "  -dcm_string NAME  : string in DICOM directory that will be used for looking for dicoms"
 	  echo "						default: *dcm"
       echo ""
@@ -122,6 +127,14 @@ while ( $ac <= $#argv )
          exit 1
 	  endif
       set fmapNum = $argv[$ac]
+   else if ( "$argv[$ac]" == "-angioData" ) then
+      set angioData = 1 #do angiography scans
+	  @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -angioData: missing argument"
+         exit 1
+      endif
+      set angioNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-func" ) then
       set func = 1 #do func
 	  @ ac ++
@@ -181,10 +194,10 @@ else if ( $#subj_proc_list == 0 ) then
 endif
 
 #Setup some arrays so that you can loop over T1, T2, fmap reconstruction
-set moddo = ( $T1Data $T2Data $fmap $func )
-set modnames = ( T1w T2w fmap $funcName )
-set modnums = ( $T1Num $T2Num $fmapNum $funcNum )
-set modoutpaths = ( anat anat fmap func )
+set moddo = ( $T1Data $T2Data $fmap $func $angio )
+set modnames = ( T1w T2w fmap $funcName angio )
+set modnums = ( $T1Num $T2Num $fmapNum $funcNum $angioNum )
+set modoutpaths = ( anat anat fmap func angio )
 
 
 ###Actually start dealing with subjects
@@ -196,13 +209,13 @@ foreach subj ( $subj_proc_list )
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
 			set modpaths = `echo $modpaths | fmt -1 | sort -n`
 			set outpath = $study_root_out/$subj/$session_name/$modoutpaths[$modc]
-			
+
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
 				echo "\nWARNING: Only $#modpaths found. You indicated $modnums[$modc] for $modnames[$modc]."
 				echo "           Only the first $modnums[$modc] will be processed!\n"
 			endif
-			
+
 			#Set how much zero-padding needs to be done based on how many runs are available
 			#This is importantt to do because not having leading zeros messes up the order that
 			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
