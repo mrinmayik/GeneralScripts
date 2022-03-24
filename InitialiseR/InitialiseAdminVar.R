@@ -8,13 +8,14 @@ library(plyr)
 library(ggplot2)
 library(ez)
 library(tidyr)
+library(dplyr)
 
 
 #Set plotting variables
 xaxistheme <- theme(axis.title.x = element_text(face="bold", size=25), axis.text.x = element_text(colour="#000000", size=20)) #, family="Times"
 yaxistheme <- theme(axis.title.y = element_text(face="bold", size=25), axis.text.y = element_text(colour="#000000", size=22))
 basebars <- scale_y_continuous(expand = c(0,0))
-plottitletheme <- theme(plot.title = element_text(face="bold", size=20, hjust=0.5), legend.key.size=unit(1.3, "cm"))
+plottitletheme <- theme(plot.title = element_text(face="bold", size=25, hjust=0.5), legend.key.size=unit(1.3, "cm"))
 legendtheme <- theme(legend.text=element_text(face="bold", size=18), legend.title=element_text(face="bold", size=20))
 bgtheme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
                  panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "#D6D6D6"), 
