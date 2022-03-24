@@ -12,6 +12,7 @@ module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
 set project = 0
 set input_dir = sourcedata
 set output_dir = rawdata
+set session_name = ""
 
 set T1Data = 0
 set T2Data = 0
@@ -48,6 +49,7 @@ while ( $ac <= $#argv )
 	  echo "						default: [project]/sourcedata"
       echo "  -output_dir DIR   : folder in project path where you want the NIFTIs"
 	  echo "						default: [project]/rawdata"
+      echo "  -session_name DIR : name of the session (if applicable)"
 	  echo "  -T1Data NUM    	: how many T1s you have"
 	  echo "						Note: make sure your T1 folders are called *T1w*"
 	  echo "						Note: T1s will be named [participant_id]_[T1_folder_name].nii"
@@ -89,6 +91,13 @@ while ( $ac <= $#argv )
          exit 1
       endif
       set output_dir = $argv[$ac]
+   else if ( "$argv[$ac]" == "-session_name" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -session_name: missing argument"
+         exit 1
+      endif
+      set session_name = $argv[$ac]
    else if ( "$argv[$ac]" == "-T1Data" ) then
       set T1Data = 1 #do T1
 	  @ ac ++
@@ -115,14 +124,12 @@ while ( $ac <= $#argv )
       set fmapNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-func" ) then
       set func = 1 #do func
-
 	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
          exit 1
-      endif      
+      endif
       set funcName = $argv[$ac]
-	  
 	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
@@ -188,7 +195,7 @@ foreach subj ( $subj_proc_list )
 		if ( $moddo[$modc] == 1 ) then
 			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
 			set modpaths = `echo $modpaths | fmt -1 | sort -n`
-			set outpath = $study_root_out/$subj/$modoutpaths[$modc]
+			set outpath = $study_root_out/$subj/$session_name/$modoutpaths[$modc]
 			
 			#Do they match up with how many are expected based on user-input?
 			if ( $#modpaths < $modnums[$modc] ) then
@@ -219,30 +226,30 @@ foreach subj ( $subj_proc_list )
 				
 				set rundir = $modpaths[$runnum]
 				echo "Converting $rundir"
-                
+
 				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
 				#if you give the whole path in find, it'll return the whole path
 				set dcmpath = `find $rundir -type f -name "*$dcm_string*" | head -n 1` #$study_root_in/$subj/$rundir
                 #get just the name oft he folder
                 set dcmdir = `dirname $dcmpath`
-                
+
 				set niidirname = `basename $rundir`
-								
+
                 #Set name of NIFTI based on whether we are working with funcs or not
                 if ( $modnames[$modc] == $funcName ) then
                     set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
                 else if ( $modnames[$modc] == fmap ) then
                     set nii_name = ${subj}_task-${niidirname}_run-${runnum}_bold
-                else				
+                else
 					set nii_name = ${subj}_run-${runnum}_$modnames[$modc]
 				endif
-					
+
 				echo "NIFTI will be called ${nii_name}.nii"
-				
+
 				cd $rundir
-				
+
 				cd $dcmdir
-				
+
 				#Reconstruct if NIFTIs don't already exist
 				if ( -f  $outpath/${nii_name}.nii ) then
 					if ( $redo == 0 ) then 
@@ -269,6 +276,6 @@ foreach subj ( $subj_proc_list )
 		endif #check whether the user turned conversion of this modality on
 	end #go through all modalities
 end #go through all subjects
-	
-	
+
+
 exit
