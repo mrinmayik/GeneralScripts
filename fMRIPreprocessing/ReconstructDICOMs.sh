@@ -13,6 +13,7 @@ set project = 0
 set input_dir = sourcedata
 set output_dir = rawdata
 set session_name = ""
+set part_name = ""
 
 set T1Data = 0
 set T2Data = 0
@@ -51,7 +52,9 @@ while ( $ac <= $#argv )
 	  echo "						default: [project]/sourcedata"
       echo "  -output_dir DIR   : folder in project path where you want the NIFTIs"
 	  echo "						default: [project]/rawdata"
-      echo "  -session_name DIR : name of the session (if applicable)"
+      echo "  -session_name NAME: name of the session (if applicable)"
+	  echo "  -part_name NAME   : name of component of a complex representation of the MRI signal (e.g., SWI)."
+	  echo "						Note: see BIDS documentation for more information"
 	  echo "  -T1Data NUM    	: how many T1s you have"
 	  echo "						Note: make sure your T1 folders are called *T1w*"
 	  echo "						Note: T1s will be named [participant_id]_[T1_folder_name].nii"
@@ -103,6 +106,13 @@ while ( $ac <= $#argv )
          exit 1
       endif
       set session_name = $argv[$ac]
+   else if ( "$argv[$ac]" == "-part_name" ) then
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -part_name: missing argument"
+         exit 1
+      endif
+      set part_name = $argv[$ac]
    else if ( "$argv[$ac]" == "-T1Data" ) then
       set T1Data = 1 #do T1
 	  @ ac ++
@@ -243,9 +253,9 @@ foreach subj ( $subj_proc_list )
 				#new scanner saves dcms 2 folders deep in the run folder, so look for the actual dcms
 				#if you give the whole path in find, it'll return the whole path
 				set dcmpath = `find $rundir -type f -name "*$dcm_string*" | head -n 1` #$study_root_in/$subj/$rundir
-                #get just the name oft he folder
+                #get just the name of the path until the folder
                 set dcmdir = `dirname $dcmpath`
-
+				#get just the name of the folder
 				set niidirname = `basename $rundir`
 
                 #Set name of NIFTI based on whether we are working with funcs or not
