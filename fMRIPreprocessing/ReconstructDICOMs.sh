@@ -103,14 +103,14 @@ while ( $ac <= $#argv )
          echo "** -session_name: missing argument"
          exit 1
       endif
-      set session_name = $argv[$ac]
+      set session_name = ses-$argv[$ac]
    else if ( "$argv[$ac]" == "-part_name" ) then
       @ ac ++
       if ( $ac > $#argv ) then
          echo "** -part_name: missing argument"
          exit 1
       endif
-      set part_name = $argv[$ac]
+      set part_name = part-$argv[$ac]
    else if ( "$argv[$ac]" == "-T1Data" ) then
       set T1Data = 1 #do T1
 	  @ ac ++
