@@ -5,8 +5,6 @@
 # Written by Mrinmayi (mrinmayi@uwm.edu)
 ########################################################################################################################################################################
 
-module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
-
 
 #Initialise some stuff
 set project = 0
@@ -19,7 +17,7 @@ set T1Data = 0
 set T2Data = 0
 set fmap = 0
 set func = 0
-set angio = 0
+set angioData = 0
 set T1Num = 0
 set T2Num = 0
 set fmapNum = 0
@@ -202,17 +200,18 @@ else if ( $#subj_proc_list == 0 ) then
 	echo "      and make sure folders are named sub-* in $study_root_in"
 	exit 1
 endif
-
+echo "Made it here 1"
 #Setup some arrays so that you can loop over T1, T2, fmap reconstruction
-set moddo = ( $T1Data $T2Data $fmap $func $angio )
+set moddo = ( $T1Data $T2Data $fmap $func $angioData )
 set modnames = ( T1w T2w fmap $funcName angio )
 set modnums = ( $T1Num $T2Num $fmapNum $funcNum $angioNum )
 set modoutpaths = ( anat anat fmap func angio )
 
-
+echo $angioData
 ###Actually start dealing with subjects
 foreach subj ( $subj_proc_list )
 	cd $study_root_in/$subj
+	echo "Made it here 2"
 	foreach modc ( `seq 1 $#moddo` )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
@@ -258,13 +257,26 @@ foreach subj ( $subj_proc_list )
 				#get just the name of the folder
 				set niidirname = `basename $rundir`
 
-                #Set name of NIFTI based on whether we are working with funcs or not
+                #Need to figure out if there's a session and part name to be added to the file name
+				if ( "$session_name" != "" ) then
+					set niiname_sessionlabel = ${session_name}_
+				else
+					set niiname_sessionlabel = ""
+				endif
+				if ( "$part_name" != "" ) then
+					set niiname_partlabel = ${part_name}_
+				else
+					set niiname_partlabel = ""
+				endif
+
+
+				#Set name of NIFTI based on whether we are working with funcs or not
                 if ( $modnames[$modc] == $funcName ) then
-                    set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
+                    set nii_name = ${subj}_${niiname_sessionlabel}task-${funcName}_run-${runnum}_${niiname_partlabel}bold
                 else if ( $modnames[$modc] == fmap ) then
-                    set nii_name = ${subj}_task-${niidirname}_run-${runnum}_bold
+                    set nii_name = ${subj}_${niiname_sessionlabel}task-${niidirname}_run-${runnum}_${niiname_partlabel}bold
                 else
-					set nii_name = ${subj}_run-${runnum}_$modnames[$modc]
+					set nii_name = ${subj}_${niiname_sessionlabel}run-${runnum}_${niiname_partlabel}$modnames[$modc]
 				endif
 
 				echo "NIFTI will be called ${nii_name}.nii"
@@ -272,7 +284,7 @@ foreach subj ( $subj_proc_list )
 				cd $rundir
 
 				cd $dcmdir
-
+quit
 				#Reconstruct if NIFTIs don't already exist
 				if ( -f  $outpath/${nii_name}.nii ) then
 					if ( $redo == 0 ) then 
