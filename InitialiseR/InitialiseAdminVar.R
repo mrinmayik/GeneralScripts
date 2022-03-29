@@ -41,7 +41,8 @@ paperlegendtheme <- theme(legend.text=element_text(face="bold", size=30), legend
 papertickstheme <- theme(axis.ticks.length = unit(.25, "cm"))
 papercanvastheme <- theme(plot.margin = margin(1, 0.5, b=1.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 
-paperfacetxtheme <- theme(strip.text.x = element_text(size = 22, colour = "black"), 
+paperfacetxtheme <- theme(strip.text.x = element_text(size = 22, colour = "black"),
+                          strip.text.y = element_text(size = 22, colour = "black"), 
                           strip.background = element_rect(color="white", fill="white", size=1.5, linetype="solid"),
                           panel.border = element_rect(colour = "black", fill = NA, size=1.5))
 
