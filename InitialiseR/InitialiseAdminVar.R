@@ -8,6 +8,7 @@ library(plyr)
 library(ggplot2)
 library(ez)
 library(tidyr)
+library(dplyr)
 
 
 #Set plotting variables
