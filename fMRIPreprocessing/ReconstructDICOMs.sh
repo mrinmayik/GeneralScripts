@@ -5,14 +5,13 @@
 # Written by Mrinmayi (mrinmayi@uwm.edu)
 ########################################################################################################################################################################
 
-module load /sharedapps/LS/psych_imaging/modulefiles/afni/07.17.2019
-
 
 #Initialise some stuff
 set project = 0
 set input_dir = sourcedata
 set output_dir = rawdata
 set session_name = ""
+set session_pref = ""
 
 set T1Data = 0
 set T2Data = 0
@@ -102,7 +101,8 @@ while ( $ac <= $#argv )
          echo "** -session_name: missing argument"
          exit 1
       endif
-      set session_name = $argv[$ac]
+      set session_name = ses-$argv[$ac]
+      set session_pref = _
    else if ( "$argv[$ac]" == "-T1Data" ) then
       set T1Data = 1 #do T1
 	  @ ac ++
@@ -220,11 +220,11 @@ foreach subj ( $subj_proc_list )
 			#This is importantt to do because not having leading zeros messes up the order that
 			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
 			if ( $modnums[$modc] <= 9 ) then
-				set d = 2
+				set d = 0
 			else if ( $modnums[$modc] > 9 ) then
-				set d = 2
+				set d = 0
 			else if ( $modnums[$modc] > 99 ) then
-				set d = 3
+				set d = 00
 			endif
 
 			#Print out a warning for how files will be converted. Let the user make an informed decision
@@ -233,7 +233,7 @@ foreach subj ( $subj_proc_list )
 			echo "Make sure you don't need to zero-pad your filenames!"
 
 			#Go through each folder
-			foreach runnum ( `count -digits $d 1 $modnums[$modc] ` ) #$modpaths
+			foreach runnum ( `seq -w ${d}1 $modnums[$modc] ` ) #$modpaths
 				
 				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
 				
@@ -250,11 +250,11 @@ foreach subj ( $subj_proc_list )
 
                 #Set name of NIFTI based on whether we are working with funcs or not
                 if ( $modnames[$modc] == $funcName ) then
-                    set nii_name = ${subj}_task-${funcName}_run-${runnum}_bold
+                    set nii_name = ${subj}${session_pref}${session_name}_task-${funcName}_run-${runnum}_bold
                 else if ( $modnames[$modc] == fmap ) then
-                    set nii_name = ${subj}_task-${niidirname}_run-${runnum}_bold
+                    set nii_name = ${subj}${session_pref}${session_name}_task-${niidirname}_run-${runnum}_bold
                 else
-					set nii_name = ${subj}_run-${runnum}_$modnames[$modc]
+					     set nii_name = ${subj}${session_pref}${session_name}_run-${runnum}_$modnames[$modc]
 				endif
 
 				echo "NIFTI will be called ${nii_name}.nii"
