@@ -128,7 +128,7 @@ while ( $ac <= $#argv )
 	  endif
       set fmapNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-angioData" ) then
-      set angioData = 1 #do angiography scans
+      set angio = 1 #do angiography scans
 	  @ ac ++
       if ( $ac > $#argv ) then
          echo "** -angioData: missing argument"
@@ -206,7 +206,7 @@ foreach subj ( $subj_proc_list )
 	foreach modc ( `seq 1 $#moddo` )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
-			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			set modpaths = ` find $study_root_in/$subj/$session_name -type d -name "*$modnames[$modc]*" `
 			set modpaths = `echo $modpaths | fmt -1 | sort -n`
 			set outpath = $study_root_out/$subj/$session_name/$modoutpaths[$modc]
 
