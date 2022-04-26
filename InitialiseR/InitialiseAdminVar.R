@@ -26,7 +26,7 @@ blankbgtheme <- theme(panel.grid.major=element_blank(), panel.grid.minor=element
                       panel.background=element_blank(), axis.line = element_line(colour = "black"))
 subtitletheme <- theme(plot.subtitle=element_text(size=14, hjust=0.5, face="italic", color="black"))
 
-posterxaxistheme <- theme(axis.title.x = element_text(face="bold", size=30, vjust=-4), axis.text.x = element_text(colour="#000000", size=28)) #, family="Times"
+posterxaxistheme <- theme(axis.title.x = element_text(face="bold", size=30, vjust=0), axis.text.x = element_text(colour="#000000", size=28)) #, family="Times"
 posteryaxistheme <- theme(axis.title.y = element_text(face="bold", size=30), axis.text.y = element_text(colour="#000000", size=24))
 posterlegendtheme <- theme(legend.text=element_text(face="bold", size=25), legend.title=element_text(face="bold", size=30))
 
