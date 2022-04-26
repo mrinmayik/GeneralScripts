@@ -12,6 +12,7 @@ set input_dir = sourcedata
 set output_dir = rawdata
 set session_name = ""
 set part_name = ""
+set session_pref = ""
 
 set T1Data = 0
 set T2Data = 0
@@ -77,19 +78,19 @@ while ( $ac <= $#argv )
       exit 0
    # modified
    else if ( "$argv[$ac]" == "-project" ) then
-     @ ac ++
-     if ( $ac > $#argv ) then
-        echo "** -project: missing argument"
-        exit 1
-     endif
-     set project = $argv[$ac]
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -project: missing argument"
+         exit 1
+      endif
+      set project = $argv[$ac]
    else if ( "$argv[$ac]" == "-input_dir" ) then
-     @ ac ++
-     if ( $ac > $#argv ) then
-        echo "** -input_dir: missing argument"
-        exit 1
-     endif
-     set input_dir = $argv[$ac]
+      @ ac ++
+      if ( $ac > $#argv ) then
+         echo "** -input_dir: missing argument"
+         exit 1
+      endif
+      set input_dir = $argv[$ac]
    else if ( "$argv[$ac]" == "-output_dir" ) then
       @ ac ++
       if ( $ac > $#argv ) then
@@ -104,6 +105,7 @@ while ( $ac <= $#argv )
          exit 1
       endif
       set session_name = ses-$argv[$ac]
+      set session_pref = _
    else if ( "$argv[$ac]" == "-part_name" ) then
       @ ac ++
       if ( $ac > $#argv ) then
@@ -121,7 +123,7 @@ while ( $ac <= $#argv )
       set T1Num = $argv[$ac]
    else if ( "$argv[$ac]" == "-T2Data" ) then
       set T2Data = 1 #do T2
-	  @ ac ++
+      @ ac ++
       if ( $ac > $#argv ) then
          echo "** -T2Data: missing argument"
          exit 1
@@ -129,15 +131,15 @@ while ( $ac <= $#argv )
       set T2Num = $argv[$ac]
    else if ( "$argv[$ac]" == "-fmap" ) then
       set fmap = 1 #do fmap
-	  @ ac ++
+      @ ac ++
       if ( $ac > $#argv ) then
          echo "** -fmap: missing argument"
          exit 1
-	  endif
+      endif
       set fmapNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-angioData" ) then
-      set angioData = 1 #do angiography scans
-	  @ ac ++
+      set angio = 1 #do angiography scans
+      @ ac ++
       if ( $ac > $#argv ) then
          echo "** -angioData: missing argument"
          exit 1
@@ -145,13 +147,13 @@ while ( $ac <= $#argv )
       set angioNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-func" ) then
       set func = 1 #do func
-	  @ ac ++
+      @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
          exit 1
       endif
       set funcName = $argv[$ac]
-	  @ ac ++
+      @ ac ++
       if ( $ac > $#argv ) then
          echo "** -func: missing argument"
          exit 1
@@ -215,7 +217,7 @@ foreach subj ( $subj_proc_list )
 	foreach modc ( `seq 1 $#moddo` )
 		#Did the user turn on this modality?
 		if ( $moddo[$modc] == 1 ) then
-			set modpaths = ` find $study_root_in/$subj -type d -name "*$modnames[$modc]*" `
+			set modpaths = ` find $study_root_in/$subj/$session_name -type d -name "*$modnames[$modc]*" `
 			set modpaths = `echo $modpaths | fmt -1 | sort -n`
 			set outpath = $study_root_out/$subj/$session_name/$modoutpaths[$modc]
 
@@ -229,11 +231,11 @@ foreach subj ( $subj_proc_list )
 			#This is importantt to do because not having leading zeros messes up the order that
 			#files are listed in. E.g. run10, run11 will be listed before run1, run2 etc.
 			if ( $modnums[$modc] <= 9 ) then
-				set d = 2
+				set d = 0
 			else if ( $modnums[$modc] > 9 ) then
-				set d = 2
+				set d = 0
 			else if ( $modnums[$modc] > 99 ) then
-				set d = 3
+				set d = 00
 			endif
 
 			#Print out a warning for how files will be converted. Let the user make an informed decision
@@ -242,7 +244,7 @@ foreach subj ( $subj_proc_list )
 			echo "Make sure you don't need to zero-pad your filenames!"
 
 			#Go through each folder
-			foreach runnum ( `count -digits $d 1 $modnums[$modc] ` ) #$modpaths
+			foreach runnum ( `seq -w ${d}1 $modnums[$modc] ` ) #$modpaths
 				
 				echo "\n************************* Now on ${modnames[${modc}]}: run ${runnum} *************************" #
 				
@@ -257,7 +259,7 @@ foreach subj ( $subj_proc_list )
 				#get just the name of the folder
 				set niidirname = `basename $rundir`
 
-                #Need to figure out if there's a session and part name to be added to the file name
+            #Need to figure out if there's a session and part name to be added to the file name
 				if ( "$session_name" != "" ) then
 					set niiname_sessionlabel = ${session_name}_
 				else
@@ -271,12 +273,12 @@ foreach subj ( $subj_proc_list )
 
 
 				#Set name of NIFTI based on whether we are working with funcs or not
-                if ( $modnames[$modc] == $funcName ) then
-                    set nii_name = ${subj}_${niiname_sessionlabel}task-${funcName}_run-${runnum}_${niiname_partlabel}bold
-                else if ( $modnames[$modc] == fmap ) then
-                    set nii_name = ${subj}_${niiname_sessionlabel}task-${niidirname}_run-${runnum}_${niiname_partlabel}bold
-                else
-					set nii_name = ${subj}_${niiname_sessionlabel}run-${runnum}_${niiname_partlabel}$modnames[$modc]
+            if ( $modnames[$modc] == $funcName ) then
+               set nii_name = ${subj}_${niiname_sessionlabel}task-${funcName}_run-${runnum}_${niiname_partlabel}bold
+            else if ( $modnames[$modc] == fmap ) then
+               set nii_name = ${subj}_${niiname_sessionlabel}task-${niidirname}_run-${runnum}_${niiname_partlabel}bold
+            else
+               set nii_name = ${subj}_${niiname_sessionlabel}run-${runnum}_${niiname_partlabel}$modnames[$modc]
 				endif
 
 				echo "NIFTI will be called ${nii_name}.nii"
@@ -284,7 +286,6 @@ foreach subj ( $subj_proc_list )
 				cd $rundir
 
 				cd $dcmdir
-quit
 				#Reconstruct if NIFTIs don't already exist
 				if ( -f  $outpath/${nii_name}.nii ) then
 					if ( $redo == 0 ) then 
