@@ -9,6 +9,7 @@ library(ggplot2)
 library(ez)
 library(tidyr)
 library(dplyr)
+library(stringr)
 
 
 #Set plotting variables
