@@ -138,7 +138,7 @@ while ( $ac <= $#argv )
       endif
       set fmapNum = $argv[$ac]
    else if ( "$argv[$ac]" == "-angioData" ) then
-      set angio = 1 #do angiography scans
+      set angioData = 1 #do angiography scans
       @ ac ++
       if ( $ac > $#argv ) then
          echo "** -angioData: missing argument"
