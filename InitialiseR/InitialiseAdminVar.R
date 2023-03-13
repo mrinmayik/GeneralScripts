@@ -10,6 +10,7 @@ library(ez)
 library(tidyr)
 library(dplyr)
 library(stringr)
+library(psychReport)
 
 
 #Set plotting variables
@@ -18,9 +19,9 @@ yaxistheme <- theme(axis.title.y = element_text(face="bold", size=25), axis.text
 basebars <- scale_y_continuous(expand = c(0,0))
 plottitletheme <- theme(plot.title = element_text(face="bold", size=25, hjust=0.5), legend.key.size=unit(1.3, "cm"))
 legendtheme <- theme(legend.text=element_text(face="bold", size=18), legend.title=element_text(face="bold", size=20))
-bgtheme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
-                 panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "#D6D6D6"), 
-                 panel.grid.minor = element_line(size = 0.5, linetype = 'solid', colour = "#D6D6D6"))
+bgtheme <- theme(panel.background = element_rect(fill = "white", colour = "black", linewidth = 1, linetype = "solid"),
+                 panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid', colour = "#D6D6D6"), 
+                 panel.grid.minor = element_line(linewidth = 0.5, linetype = 'solid', colour = "#D6D6D6"))
 stdbar <- geom_bar(stat="identity", position="dodge", color="#000000", size=1.5)
 canvastheme <- theme(plot.margin = margin(1, 0.5, 0.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 blankbgtheme <- theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
@@ -40,12 +41,12 @@ paperyaxistheme <- theme(axis.text.y = element_text(size=30),
                                                      size=35))
 paperlegendtheme <- theme(legend.text=element_text(face="bold", size=30), legend.title=element_text(face="bold", size=35))
 papertickstheme <- theme(axis.ticks.length = unit(.25, "cm"))
-papercanvastheme <- theme(plot.margin = margin(1, 0.5, b=1.5, 0.5, "cm"), plot.background = element_rect(fill = "white"))
+papercanvastheme <- theme(plot.margin = margin(t=0.7, 0.5, b=0.7, 0.5, "cm"), plot.background = element_rect(fill = "white"))
 
 paperfacetxtheme <- theme(strip.text.x = element_text(size = 22, colour = "black"),
                           strip.text.y = element_text(size = 22, colour = "black"), 
-                          strip.background = element_rect(color="white", fill="white", size=1.5, linetype="solid"),
-                          panel.border = element_rect(colour = "black", fill = NA, size=1.5))
+                          strip.background = element_rect(color="white", fill="white", linewidth=1.5, linetype="solid"),
+                          panel.border = element_rect(colour = "black", fill = NA, linewidth=1.5))
 
 RmYGap <- scale_y_continuous(expand = c(0,0))
 
@@ -56,6 +57,7 @@ RmYGap <- scale_y_continuous(expand = c(0,0))
 #Get mean, median etc. Good for plotting. This function can be used in conjunction with ddply
 #That way you can get the mean, median etc per group/condition. 
 SummaryData <- function(df, UseVar, RMNA=FALSE){
+  df <- as.data.frame(df)
   M=mean(df[,UseVar], na.rm=RMNA)
   SD <- sd(df[,UseVar], na.rm=RMNA)
   SE <- SD / sqrt(nrow(df))
@@ -65,6 +67,18 @@ SummaryData <- function(df, UseVar, RMNA=FALSE){
   MeanMinusSE <- M-SE
   NumOfRows <- nrow(df)
   data.frame(Mean=M, SD=SD, SE=SE, LCI=LCI, HCI=HCI, MeanPlusSE=MeanPlusSE, MeanMinusSE, Rows=NumOfRows)
+}
+
+# Create a function to convert all factor columns to character
+FactorsToChar <- function(df) {
+  # Get a list of the factor columns in the dataframe
+  factor_columns <- sapply(df, is.factor)
+  
+  # Convert each factor column to character
+  df[, factor_columns] <- lapply(df[, factor_columns], as.character)
+  
+  # Return the modified dataframe
+  return(df)
 }
 
 #Make a simple function that makes sure that there are no NAs in a data frame. It'll be helpful to check if anything got
@@ -112,14 +126,16 @@ CheckRepBlock <- function(df, UseCol, OrderBy){
 CorrectPVals <- function(df, pvalcol, usemethod="fdr"){
   #Is raw p-value significant?
   df[, "sig"] <- ifelse(df[, pvalcol]<=0.05, "*", "")
-  #Do bonferroni for free
-  df[, paste(pvalcol, "_BFcorrected", sep="")] <- p.adjust(df[, pvalcol], method="bonferroni")
-  #Is BF corrected p significant?
-  df[, paste("sig_BFcorrected", sep="")] <- ifelse(df[, paste(pvalcol, "_BFcorrected", sep="")]<=0.05, "*", "")
   
   #Correct p's based on method entered
   df[, paste(pvalcol, "_", usemethod, "corrected", sep="")] <- p.adjust(df[, pvalcol], method=usemethod)
   #Is corrected p significant?
   df[, paste("sig_", usemethod, "corrected", sep="")] <- ifelse(df[, paste(pvalcol, "_", usemethod, "corrected", sep="")]<=0.05, "*", "")
+  
+  #Do bonferroni for free
+  df[, paste(pvalcol, "_BFcorrected", sep="")] <- p.adjust(df[, pvalcol], method="bonferroni")
+  #Is BF corrected p significant?
+  df[, paste("sig_BFcorrected", sep="")] <- ifelse(df[, paste(pvalcol, "_BFcorrected", sep="")]<=0.05, "*", "")
+  
   return(df)
 }
