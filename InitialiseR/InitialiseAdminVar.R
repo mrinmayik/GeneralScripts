@@ -11,6 +11,8 @@ library(tidyr)
 library(dplyr)
 library(stringr)
 library(psychReport)
+library(ggpubr)
+library(rstatix)
 
 
 #Set plotting variables
