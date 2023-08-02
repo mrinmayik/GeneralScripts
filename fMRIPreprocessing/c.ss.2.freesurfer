@@ -41,6 +41,6 @@ export SUBJECTS_DIR=$res_dir
 
 #modified
 #Run Freesurfer
-recon-all -all -s $sid -i $indata_root/$sid/$anat_name -hippocampal-subfields-T1
+recon-all -all -s $sid -i $indata_root/$sid/$anat_name
 
 

@@ -50,7 +50,7 @@ endif
 #modified
 cd ${results_dir}/${sid}
 
-@SSwarper -input $indata_root/$sid/anat/${anat_name}           \
+@SSwarper -input $indata_root/${anat_name}           \
           -base MNI152_2009_template_SSW.nii.gz                \
           -subid $sid                                          \
           -odir ${results_dir}/${sid}/
