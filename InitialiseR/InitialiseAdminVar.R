@@ -141,3 +141,13 @@ CorrectPVals <- function(df, pvalcol, usemethod="fdr"){
   
   return(df)
 }
+
+# Function to refactor all factor columns so that only the values in those column
+# are included is levels. This helps with using .drop=F in any summarise calls later.
+FactorsToUniqueLevels <- function(df){
+  # Get columns that are already factors
+  factor_cols <- vapply(df, is.factor, logical(1))
+  # Apply the factor() function to those columns, and assign then back into d
+  df[factor_cols] <- lapply(df[factor_cols], factor)
+  return(df)
+}
